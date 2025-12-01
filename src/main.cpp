@@ -182,12 +182,12 @@ float wall_following(){
   uint16_t dist = sensor.readRangeSingleMillimeters();
 
 
-  int wall_error = 0;
-
   element = dist - WALL_dist;
 
   if (element>=max_wall_error){
-    element = 15;
+    element = max_wall_error;
+  } else if (element<=-max_wall_error){
+    element = -max_wall_error;
   }
 
   Serial.println(dist);
@@ -211,9 +211,10 @@ void loop() {
   // feedforwardPWM(1); // Test left motor
   // delay(1000);
   // feedforwardPWM(2); // Test right motor
-  delay(1000);
-  wall_error = wall_following()*2;
-  //Serial.print(wall_error);
+  delay(10);
+  wall_error = wall_following()*5;
+  Serial.print(wall_error);
+  Serial.print(".....................");
   Serial.print(encoders.leftRPS());
   Serial.print(".....................");
   Serial.print(encoders.rightRPS());

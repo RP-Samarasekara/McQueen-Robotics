@@ -141,8 +141,8 @@ const int XSHUT_PIN_WALL_L = 10;
 const float WALL_dist = 50;  
 const int XSHUT_PIN_OBJECT = 12;
 const int XSHUT_PIN_WALL_R = 11;
+const float max_wall_error = 20;
 
 float element = 0;
 float wall_error = 0;
 
-const float max_wall_error = 15;
