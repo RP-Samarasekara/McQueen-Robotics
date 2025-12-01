@@ -6,6 +6,13 @@
 #include"motors.h"
 #include <Wire.h>
 #include <VL53L0X.h>
+//#include <Servo.h>
+
+/*Servo left_arm; //left arm
+Servo right_arm; //right arm
+Servo upper; //platform
+Servo elbow; //rotate
+Servo base;*/
 
 
 VL53L0X sensor;
@@ -18,8 +25,8 @@ Encoders encoders;
 
 ISR(TIMER1_COMPA_vect) {
   encoders.update();
-  //motors.update(200,irCorrection,0);
-  motors.update(200,wall_error,0);
+  motors.update(-200,0,0);
+ // motors.update(200,wall_error,0);
 }
 
 float line_follow(){
@@ -140,6 +147,14 @@ void setup() {
   sensor.init();
   sensor.setTimeout(500);
 
+  /*left_arm.attach(31);  
+  right_arm.attach(30);
+  upper.attach(32); 
+  elbow.attach(34);
+  base.attach(33); */
+
+  //elbow.write(180);
+
  
 
 
@@ -204,7 +219,7 @@ void loop() {
   //encoders.update();
   //Serial.println(encoders.robot_speed());
 
-  //irCorrection = line_follow()/0.5;
+  irCorrection = line_follow()/0.5;
 
   //Serial.println(irCorrection);
   
@@ -212,12 +227,12 @@ void loop() {
   // delay(1000);
   // feedforwardPWM(2); // Test right motor
   delay(10);
-  wall_error = wall_following()*5;
+  /*wall_error = wall_following()*5;
   Serial.print(wall_error);
   Serial.print(".....................");
   Serial.print(encoders.leftRPS());
   Serial.print(".....................");
-  Serial.print(encoders.rightRPS());
+  Serial.print(encoders.rightRPS());*/
 
 
 }
