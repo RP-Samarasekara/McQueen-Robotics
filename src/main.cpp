@@ -184,7 +184,7 @@ void setup() {
   sensor.init();
   sensor.setTimeout(500);
 
-  task_1();
+  //task_1();
   //rotate_ninety();
 
   /*left_arm.attach(31);  
@@ -199,6 +199,7 @@ void setup() {
  
   // motors.omega = 0;
   // motors.speed = 0;
+  task_1();
 
   
 }
@@ -223,8 +224,8 @@ float wall_following(){
 void loop() {
   //line_follow();
 
-  Serial.println(correction);
-  Serial.println(speed);
+  //Serial.println(correction);
+  //Serial.println(speed);
  // rotate_ninety();
 
 
