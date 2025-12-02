@@ -1,0 +1,2 @@
+first i need a movemnet function which takes direction , starting node and destination node 
+if it detects a obstacle the it interupts the movment function and stop

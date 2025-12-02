@@ -6,9 +6,14 @@
 #include"motors.h"
 #include <Wire.h>
 #include <VL53L0X.h>
+<<<<<<< HEAD
 #include "config.h"
 #include <Ticker.h>
 #include <Servo.h>
+=======
+
+//#include <Servo.h>
+>>>>>>> origin/task_1
 
 
 Servo left_arm; //left arm
@@ -23,8 +28,10 @@ VL53L0X sensor;
 Motors motors;
 Encoders encoders;
 
+
 //Ticker sendTicker;
 //Ticker controlTicker;
+<<<<<<< HEAD
 // void updateFunctions() {
 //     encoders.update();
 //     motors.update(speed, 0, correction);
@@ -37,6 +44,14 @@ void func() {
   encoders.update();
   motors.update(speed,0,correction);
   }
+=======
+
+ISR(TIMER1_COMPA_vect) {
+  //encoders.update();
+ // motors.update(-200,0,0);
+  motors.update(200,0,0);
+}
+>>>>>>> origin/task_1
 
 Ticker ticker1(func, 20, 0, MILLIS);
 
@@ -153,6 +168,7 @@ void rotate_ninety() {
 
 }
 
+<<<<<<< HEAD
 void task_1(){
   int column = 1;
   while (column <= 9){
@@ -173,6 +189,8 @@ void task_1(){
   rotate_ninety();
 }
 
+=======
+>>>>>>> origin/task_1
 void setup() {
   motors.begin();
   encoders.begin();
@@ -218,7 +236,11 @@ void setup() {
   task_1();
 
   
+
+
+  
 }
+//........................................wall following ........................................................//
 float wall_following(){
   uint16_t dist = sensor.readRangeSingleMillimeters();
 
@@ -250,6 +272,7 @@ void waitMillis(unsigned long interval) {
 
 void loop() {
 
+<<<<<<< HEAD
     // Always update ticker
     ticker1.update();
 
@@ -258,6 +281,24 @@ void loop() {
 
 //     // -------- NON-BLOCKING SERVO ARM CONTROL ------------
 //     unsigned long now = millis();
+=======
+  //irCorrection = line_follow()/0.5;
+
+  //Serial.println(irCorrection);
+  
+  // feedforwardPWM(1); // Test left motor
+  // delay(1000);
+  // feedforwardPWM(2); // Test right motor
+ // delay(10);
+  /*wall_error = wall_following()*5;
+  Serial.print(wall_error);
+  Serial.print(".....................");
+  Serial.print(encoders.leftRPS());
+  Serial.print(".....................");
+  Serial.print(encoders.rightRPS());*/
+   // true = right turn
+   
+>>>>>>> origin/task_1
 
 //     switch (servoState) {
 //         case 0:

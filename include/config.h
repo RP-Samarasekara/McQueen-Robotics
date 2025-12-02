@@ -150,3 +150,6 @@ const float max_wall_error = 20;
 float element = 0;
 float wall_error = 0;
 
+//robot movemets//
+const int TICKS_90 = static_cast<int>(( (ROBOT_RADIUS* 2 * 3.1416 / 2.0) / MM_PER_ROTATION) * PULSES_PER_ROTATION);
+
