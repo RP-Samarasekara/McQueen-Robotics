@@ -76,7 +76,7 @@ float  line_follow(){
     speed = 0;
     correction = -ir_correction/250;
   } else {
-    speed = 150;
+    speed = 200;
     correction =0;
   }
 
@@ -141,6 +141,25 @@ void rotate_ninety() {
 
 }
 
+void task_1(){
+  int column = 1;
+  while (column <= 9){
+    line_follow();
+    if (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
+  analogRead(IR_R1)>= threshold && analogRead(IR_M)>= threshold){
+    while (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
+  analogRead(IR_R1)>= threshold && analogRead(IR_M)>= threshold) {
+    line_follow();
+  }
+    column++;
+
+  }
+  Serial.println(column);
+    
+  }
+  rotate_ninety();
+}
+
 void setup() {
   motors.begin();
   encoders.begin();
@@ -164,6 +183,8 @@ void setup() {
 
   sensor.init();
   sensor.setTimeout(500);
+
+  task_1();
   //rotate_ninety();
 
   /*left_arm.attach(31);  
@@ -200,7 +221,7 @@ float wall_following(){
 
 
 void loop() {
-  line_follow();
+  //line_follow();
 
   Serial.println(correction);
   Serial.println(speed);
