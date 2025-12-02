@@ -6,6 +6,7 @@
 #include"motors.h"
 #include <Wire.h>
 #include <VL53L0X.h>
+#include"movements.h"
 //#include <Servo.h>
 
 /*Servo left_arm; //left arm
@@ -19,13 +20,14 @@ VL53L0X sensor;
 // put function declarations here:
 Motors motors;
 Encoders encoders;
+Movement movement(motors, encoders);
 
 //Ticker sendTicker;
 //Ticker controlTicker;
 
 ISR(TIMER1_COMPA_vect) {
-  encoders.update();
-  motors.update(-200,0,0);
+  //encoders.update();
+  //motors.update(-200,0,0);
  // motors.update(200,wall_error,0);
 }
 
@@ -219,20 +221,26 @@ void loop() {
   //encoders.update();
   //Serial.println(encoders.robot_speed());
 
-  irCorrection = line_follow()/0.5;
+  //irCorrection = line_follow()/0.5;
 
   //Serial.println(irCorrection);
   
   // feedforwardPWM(1); // Test left motor
   // delay(1000);
   // feedforwardPWM(2); // Test right motor
-  delay(10);
+ // delay(10);
   /*wall_error = wall_following()*5;
   Serial.print(wall_error);
   Serial.print(".....................");
   Serial.print(encoders.leftRPS());
   Serial.print(".....................");
   Serial.print(encoders.rightRPS());*/
+  movement.turn90(true);   // true = right turn
+  delay(1000);
+
+    // Turn left 90 degrees
+  movement.turn90(false);  // false = left turn
+  delay(1000);
 
 
 }
