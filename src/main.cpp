@@ -8,13 +8,14 @@
 #include <VL53L0X.h>
 #include "config.h"
 #include <Ticker.h>
-//#include <Servo.h>
+#include <Servo.h>
 
-/*Servo left_arm; //left arm
+
+Servo left_arm; //left arm
 Servo right_arm; //right arm
 Servo upper; //platform
 Servo elbow; //rotate
-Servo base;*/
+Servo base;
 
 
 VL53L0X sensor;
@@ -176,6 +177,7 @@ void setup() {
   encoders.begin();
   encoders.reset();
   ticker1.start();
+  ticker1.start();
  // setupTimer1();
   Serial.begin(9600);
 
@@ -199,13 +201,14 @@ void setup() {
   //task_1();
   //rotate_ninety();
 
-  /*left_arm.attach(31);  
+  left_arm.attach(31);  
   right_arm.attach(30);
   upper.attach(32); 
   elbow.attach(34);
-  base.attach(33); */
+  base.attach(33); 
 
-  //elbow.write(180);
+  elbow.write(180);
+  upper.write(0);
 
   motors.enable_controllers();
  
@@ -233,13 +236,53 @@ float wall_following(){
   };
 
 
-void loop() {
-  ticker1.update();
-  line_follow();
- 
-  //Serial.println(correction);
-  //Serial.println(speed);
- // rotate_ninety();
+unsigned long lastServoTime = 0;
+int servoState = 0;
 
-
+void waitMillis(unsigned long interval) {
+    unsigned long start = millis();
+    while (millis() - start < interval) {
+        ticker1.update();  // keep Ticker alive
+        line_follow();     // keep line-following alive
+    }
 }
+
+void loop() {
+
+    // Always update ticker
+    ticker1.update();
+
+    // Always run line follow
+    line_follow();
+
+//     // -------- NON-BLOCKING SERVO ARM CONTROL ------------
+//     unsigned long now = millis();
+
+//     switch (servoState) {
+//         case 0:
+//             elbow.write(180);
+//             lastServoTime = now;
+//             servoState = 1;
+//             break;
+
+//         case 1:
+//             if (now - lastServoTime >= 1500) {
+//                 elbow.write(160);
+//                 lastServoTime = now;
+//                 servoState = 2;
+//             }
+//             break;
+
+//         case 2:
+//             if (now - lastServoTime >= 1500) {
+//                 servoState = 0; // repeat cycle
+//             }
+//             break;
+//     }
+// }
+    // -------- BLOCKING SERVO ARM CONTROL ------------
+     elbow.write(180);
+     waitMillis(1500);
+     elbow.write(160);
+     waitMillis(1500);
+ }
