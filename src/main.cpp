@@ -6,6 +6,8 @@
 #include"motors.h"
 #include <Wire.h>
 #include <VL53L0X.h>
+#include "config.h"
+#include <Ticker.h>
 //#include <Servo.h>
 
 /*Servo left_arm; //left arm
@@ -22,12 +24,21 @@ Encoders encoders;
 
 //Ticker sendTicker;
 //Ticker controlTicker;
-
-ISR(TIMER1_COMPA_vect) {
+// void updateFunctions() {
+//     encoders.update();
+//     motors.update(speed, 0, correction);
+// }
+// ISR(TIMER1_COMPA_vect) {
+//   encoders.update();
+//  // motors.update(0,0,2);
+//   motors.update(speed,0,correction);
+void func() {
   encoders.update();
- // motors.update(0,0,2);
   motors.update(speed,0,correction);
-}
+  }
+
+Ticker ticker1(func, 20, 0, MILLIS);
+
 
 float  line_follow(){
   int s_L2 = analogRead(IR_L2);
@@ -74,7 +85,7 @@ float  line_follow(){
 
   if (abs(ir_error) >= 2) {
     speed = 0;
-    correction = -ir_correction/250;
+    correction = -ir_correction/150;
   } else {
     speed = 200;
     correction =0;
@@ -84,23 +95,23 @@ float  line_follow(){
 
 
 
-void setupTimer1() {
+// void setupTimer1() {
 
-    cli();  // Stop interrupts
+//     cli();  // Stop interrupts
 
-    TCCR1A = 0;            // Normal operation
-    TCCR1B = 0;
+//     TCCR1A = 0;            // Normal operation
+//     TCCR1B = 0;
 
-    // Set compare value for 10ms interval
-    OCR1A = 2499;           // (16MHz / (64*100)) - 1
+//     // Set compare value for 10ms interval
+//     OCR1A = 2499;           // (16MHz / (64*100)) - 1
 
-    TCCR1B |= (1 << WGM12); // CTC mode
-    TCCR1B |= (1 << CS11) | (1 << CS10); // Prescaler = 64
+//     TCCR1B |= (1 << WGM12); // CTC mode
+//     TCCR1B |= (1 << CS11) | (1 << CS10); // Prescaler = 64
 
-    TIMSK1 |= (1 << OCIE1A); // Enable interrupt
+//     TIMSK1 |= (1 << OCIE1A); // Enable interrupt
 
-    sei();  // Enable interrupts
-}
+//     sei();  // Enable interrupts
+// }
 
 /*void feedforwardPWM(int motor, int step = 10, int delay_ms = 300) {
     // motor: 1 -> left, 2 -> right
@@ -164,7 +175,8 @@ void setup() {
   motors.begin();
   encoders.begin();
   encoders.reset();
-  setupTimer1();
+  ticker1.start();
+ // setupTimer1();
   Serial.begin(9600);
 
   pinMode(IR_L2, INPUT);
@@ -199,7 +211,7 @@ void setup() {
  
   // motors.omega = 0;
   // motors.speed = 0;
-  task_1();
+  //task_1();
 
   
 }
@@ -222,8 +234,9 @@ float wall_following(){
 
 
 void loop() {
-  //line_follow();
-
+  ticker1.update();
+  line_follow();
+ 
   //Serial.println(correction);
   //Serial.println(speed);
  // rotate_ninety();

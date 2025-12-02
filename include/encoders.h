@@ -5,6 +5,7 @@
 #include "config.h"
 #include <math.h>
 
+
 class Encoders;
 
 extern Encoders encoders;
@@ -248,4 +249,5 @@ private:
     int time_change_1;
     int time_change_2;
     int time_change_3;
+    
 };
