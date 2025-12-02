@@ -35,7 +35,7 @@ Encoders encoders;
 //   motors.update(speed,0,correction);
 void func() {
   encoders.update();
-  motors.update(speed,0,correction);
+  //motors.update(speed,0,correction);
   }
 
 Ticker ticker1(func, 20, 0, MILLIS);
@@ -114,32 +114,7 @@ float  line_follow(){
 //     sei();  // Enable interrupts
 // }
 
-/*void feedforwardPWM(int motor, int step = 10, int delay_ms = 300) {
-    // motor: 1 -> left, 2 -> right
-    for (int i = -100; i <= 100; i += step) {
-      
-        if (motor == 1) {
-            motors.set_left_motor_percentage(i);
-            motors.set_right_motor_percentage(0);
-            if (i==-100) delay(100); // stop the other motor
-        } else if (motor == 2) {
-            motors.set_right_motor_percentage(i);
-            motors.set_left_motor_percentage(0); 
-            if (i==-100) delay(100);// stop the other motor
-        }
 
-        delay(delay_ms);           // wait for motor to stabilize
-        encoders.update();         // update encoder readings
-        float speed = 2 * encoders.robot_speed(); // mm/s
-
-        // Print the motor, PWM, and measured speed
-        if (motor == 1) Serial.print("Left,");
-        else Serial.print("Right,");
-        Serial.print(i);
-        Serial.print(",");
-        Serial.println(speed);
-    }
-}*/
 
 void rotate_ninety() {
 
@@ -149,7 +124,7 @@ void rotate_ninety() {
     correction = 1;
   }
   correction = 0;
-  delay(2000);
+  //waitMillis(2000);
 
 }
 
@@ -172,52 +147,6 @@ void task_1(){
   rotate_ninety();
 }
 
-void setup() {
-  motors.begin();
-  encoders.begin();
-  encoders.reset();
-  ticker1.start();
-  ticker1.start();
- // setupTimer1();
-  Serial.begin(9600);
-
-  pinMode(IR_L2, INPUT);
-    pinMode(IR_L1, INPUT);
-    pinMode(IR_R1, INPUT);
-    pinMode(IR_R2, INPUT);
-    pinMode(IR_M, INPUT);
-
-  pinMode(XSHUT_PIN_WALL_L, OUTPUT);
-  digitalWrite(XSHUT_PIN_WALL_L, LOW);
-  delay(10);
-  digitalWrite(XSHUT_PIN_WALL_L, HIGH);
-  delay(10);
-
-  Wire.begin(); 
-
-  sensor.init();
-  sensor.setTimeout(500);
-
-  //task_1();
-  //rotate_ninety();
-
-  left_arm.attach(31);  
-  right_arm.attach(30);
-  upper.attach(32); 
-  elbow.attach(34);
-  base.attach(33); 
-
-  elbow.write(180);
-  upper.write(0);
-
-  motors.enable_controllers();
- 
-  // motors.omega = 0;
-  // motors.speed = 0;
-  //task_1();
-
-  
-}
 float wall_following(){
   uint16_t dist = sensor.readRangeSingleMillimeters();
 
@@ -246,43 +175,143 @@ void waitMillis(unsigned long interval) {
         line_follow();     // keep line-following alive
     }
 }
+//.............................................Arm Movements....................................//
 
+void moveSmooth(Servo &servo, int fromAngle, int toAngle, int stepwaitMillis) {
+  if (fromAngle < toAngle) {
+    for (int a = fromAngle; a <= toAngle; a++) {
+      servo.write(a);
+      waitMillis(stepwaitMillis);
+    }
+  } else {
+    for (int a = fromAngle; a >= toAngle; a--) {
+      servo.write(a);
+      waitMillis(stepwaitMillis);
+    }
+  }
+}
+
+void movebothSmooth(Servo &left, Servo &right, int startL, int startR, int endL, int endR, int stepwaitMillis) {
+  int steps = max(abs(endL - startL), abs(endR - startR));
+  for (int i = 0; i <= steps; i++) {
+    int currentL = startL + (endL - startL) * i / steps;
+    int currentR = startR + (endR - startR) * i / steps;
+    left.write(currentL);
+    right.write(currentR);
+    waitMillis(stepwaitMillis);
+  }
+}
+
+// ---- Action functions ----
+void boxpickup() {
+
+  moveSmooth(base, 0, 0, 10);
+  upper.write(0);
+  waitMillis(1200);
+  moveSmooth(elbow, 180, 104, 10);
+  waitMillis(1200);
+  movebothSmooth(left_arm, right_arm, 0, 105, 65, 70, 10);
+  waitMillis(1200);
+  moveSmooth(elbow, 104, 180, 10);
+ 
+}
+
+void ballpickup() {
+  moveSmooth(upper, 0, 90, 15);
+  waitMillis(1200);
+  moveSmooth(base, 0, 90, 15);
+  waitMillis(1200);
+  moveSmooth(elbow, 180, 116, 15);
+  waitMillis(1200);
+  movebothSmooth(left_arm, right_arm, 0, 105, 80, 60, 15);
+  waitMillis(1200);
+  moveSmooth(elbow, 116, 180, 15);
+  waitMillis(1200);
+  moveSmooth(base, 90, 0, 15);
+  waitMillis(1200);
+  movebothSmooth(left_arm, right_arm, 80, 60, 0, 105, 15);
+  waitMillis(1200);
+  moveSmooth(upper, 90, 0, 15);
+  waitMillis(3000);
+  
+}
+
+void boxdrop() {
+  moveSmooth(elbow, 180, 104, 10);
+  waitMillis(1200);
+  movebothSmooth(left_arm, right_arm, 65, 70, 0, 105, 10);
+  waitMillis(12);
+  moveSmooth(elbow, 104, 180, 10);
+  
+}
+
+
+
+
+
+
+
+//.................................void_setup....................................//
+void setup() {
+  motors.begin();
+  encoders.begin();
+  encoders.reset();
+  ticker1.start();
+  ticker1.start();
+ // setupTimer1();
+  Serial.begin(9600);
+
+  pinMode(IR_L2, INPUT);
+    pinMode(IR_L1, INPUT);
+    pinMode(IR_R1, INPUT);
+    pinMode(IR_R2, INPUT);
+    pinMode(IR_M, INPUT);
+
+  pinMode(XSHUT_PIN_WALL_L, OUTPUT);
+  digitalWrite(XSHUT_PIN_WALL_L, LOW);
+  waitMillis(10);
+  digitalWrite(XSHUT_PIN_WALL_L, HIGH);
+  waitMillis(10);
+
+  Wire.begin(); 
+
+  sensor.init();
+  sensor.setTimeout(500);
+
+  //task_1();
+  //rotate_ninety();
+
+  left_arm.attach(31);  
+  right_arm.attach(30);
+  upper.attach(32); 
+  elbow.attach(34);
+  base.attach(33); 
+
+  elbow.write(180);
+  upper.write(0);
+  left_arm.write(0);
+  right_arm.write(105);
+  base.write(0);
+
+  motors.enable_controllers();
+ }
+
+
+//.................................void_loop....................................//
 void loop() {
 
     // Always update ticker
     ticker1.update();
 
     // Always run line follow
-    line_follow();
+    //line_follow();
 
-//     // -------- NON-BLOCKING SERVO ARM CONTROL ------------
-//     unsigned long now = millis();
-
-//     switch (servoState) {
-//         case 0:
-//             elbow.write(180);
-//             lastServoTime = now;
-//             servoState = 1;
-//             break;
-
-//         case 1:
-//             if (now - lastServoTime >= 1500) {
-//                 elbow.write(160);
-//                 lastServoTime = now;
-//                 servoState = 2;
-//             }
-//             break;
-
-//         case 2:
-//             if (now - lastServoTime >= 1500) {
-//                 servoState = 0; // repeat cycle
-//             }
-//             break;
-//     }
-// }
-    // -------- BLOCKING SERVO ARM CONTROL ------------
-     elbow.write(180);
-     waitMillis(1500);
-     elbow.write(160);
-     waitMillis(1500);
- }
+    boxpickup();
+    waitMillis(5000);
+    boxdrop();
+    waitMillis(5000);
+    ballpickup();
+    waitMillis(5000);
+    boxdrop();
+    waitMillis(5000);
+}
