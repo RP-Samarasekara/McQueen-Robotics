@@ -25,11 +25,11 @@ Encoders encoders;
 
 ISR(TIMER1_COMPA_vect) {
   encoders.update();
-  motors.update(-200,0,0);
- // motors.update(200,wall_error,0);
+ // motors.update(0,0,2);
+  motors.update(speed,0,correction);
 }
 
-float line_follow(){
+float  line_follow(){
   int s_L2 = analogRead(IR_L2);
   int s_L1 = analogRead(IR_L1);
   int s_R1 = analogRead(IR_R1);
@@ -58,11 +58,11 @@ float line_follow(){
     ir_error -= 3;
   }
   
-  if (ir_error == 0) {
-    if (s_M <= threshold) {
+  /*if (ir_error == 0) {
+    if (s_M <= threshold && abs(last_nonzero_error) == 3) {
       ir_error = last_nonzero_error;
     }
-  }
+  }*/
 
   // PID calculations
   integral += ir_error;
@@ -71,13 +71,18 @@ float line_follow(){
   
   lastError = ir_error;
 
-  if (ir_error != 0) {
-    last_nonzero_error = ir_error;
+
+  if (abs(ir_error) >= 2) {
+    speed = 0;
+    correction = -ir_correction/250;
+  } else {
+    speed = 150;
+    correction =0;
   }
 
-  return(ir_correction);
 }
-   
+
+
 
 void setupTimer1() {
 
@@ -97,7 +102,7 @@ void setupTimer1() {
     sei();  // Enable interrupts
 }
 
-void feedforwardPWM(int motor, int step = 10, int delay_ms = 300) {
+/*void feedforwardPWM(int motor, int step = 10, int delay_ms = 300) {
     // motor: 1 -> left, 2 -> right
     for (int i = -100; i <= 100; i += step) {
       
@@ -122,7 +127,20 @@ void feedforwardPWM(int motor, int step = 10, int delay_ms = 300) {
         Serial.print(",");
         Serial.println(speed);
     }
+}*/
+
+void rotate_ninety() {
+
+  float ini_angle = encoders.robotAngle();
+
+  while (abs(encoders.robotAngle()-ini_angle) <=90){
+    correction = 1;
+  }
+  correction = 0;
+  delay(2000);
+
 }
+
 void setup() {
   motors.begin();
   encoders.begin();
@@ -146,6 +164,7 @@ void setup() {
 
   sensor.init();
   sensor.setTimeout(500);
+  //rotate_ninety();
 
   /*left_arm.attach(31);  
   right_arm.attach(30);
@@ -155,37 +174,6 @@ void setup() {
 
   //elbow.write(180);
 
- 
-
-
-  // controlTicker.attach(0.005,[](){
-  //     encoders.update();
-  //     motion.update();
-  //     motors.update(motion.velocity(), motion.omega(), sensors.get_steering_feedback());
-
-  //});
-
-  //sendTicker.attach(0.02, [](){
-
-      // encoders.update();
-      // motion.update();
-      // motors.update(motion.velocity(), motion.omega(), sensors.get_steering_feedback());
-      //communications.send("HI THERE");
-      //communications.send("IRSENSORS",sensors.all_IR_readings, NUM_SENSORS+2);
-      // communications.send_velocity();
-      //communications.check(); 
-    //  sensors.update();
-
-
-    //  });
-  
-
-
-  //delay(5000);
-  //encoders.update();
-  //motors.set_right_motor_pwm(500);
-  //motors.set_left_motor_pwm(500);
-  // // delay(1000);
   motors.enable_controllers();
  
   // motors.omega = 0;
@@ -211,28 +199,12 @@ float wall_following(){
   };
 
 
-
 void loop() {
-  // motion.reset_drive_system();
-  // robot.move_straight(0.1);
-  // delay(1000);
-  //encoders.update();
-  //Serial.println(encoders.robot_speed());
+  line_follow();
 
-  irCorrection = line_follow()/0.5;
-
-  //Serial.println(irCorrection);
-  
-  // feedforwardPWM(1); // Test left motor
-  // delay(1000);
-  // feedforwardPWM(2); // Test right motor
-  delay(10);
-  /*wall_error = wall_following()*5;
-  Serial.print(wall_error);
-  Serial.print(".....................");
-  Serial.print(encoders.leftRPS());
-  Serial.print(".....................");
-  Serial.print(encoders.rightRPS());*/
+  Serial.println(correction);
+  Serial.println(speed);
+ // rotate_ninety();
 
 
 }
