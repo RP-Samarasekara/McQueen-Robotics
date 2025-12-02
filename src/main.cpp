@@ -41,12 +41,12 @@ void func() {
 Ticker ticker1(func, 20, 0, MILLIS);
 
 
-float  line_follow(){
+void  line_follow(){
   int s_L2 = analogRead(IR_L2);
   int s_L1 = analogRead(IR_L1);
   int s_R1 = analogRead(IR_R1);
   int s_R2 = analogRead(IR_R2);
-  int s_M = analogRead(IR_M);
+  //int s_M = analogRead(IR_M);
 
   int ir_error = 0;  // If error is Negative = line is on left, Positive = line is on right
   
@@ -167,6 +167,7 @@ void task_1(){
 
   }
   Serial.println(column);
+  ticker1.update();
     
   }
   rotate_ninety();
@@ -214,7 +215,7 @@ void setup() {
  
   // motors.omega = 0;
   // motors.speed = 0;
-  //task_1();
+  task_1();
 
   
 }
