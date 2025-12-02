@@ -52,7 +52,7 @@ const int maxMotorPercentage = 100;
 //******************************robot dimensions*****************************/
 const float MM_PER_ROTATION = 201.0;//tyre
 const float PULSES_PER_ROTATION = 880;
-const float ROBOT_RADIUS = 82;  //there is some error in this. Although it says radius put Wheel to wheel diameter
+const float ROBOT_RADIUS = 77.5;  //there is some error in this. Although it says radius put Wheel to wheel diameter
 const float DEG_PER_MM_DIFFERENCE = 180.0/(2*ROBOT_RADIUS*PI);
 
 const float ARRAY_TO_WHEEL_DISTANCE = 75.0;//65; //change this accordingly

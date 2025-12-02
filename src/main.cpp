@@ -6,7 +6,7 @@
 #include"motors.h"
 #include <Wire.h>
 #include <VL53L0X.h>
-#include"movements.h"
+
 //#include <Servo.h>
 
 /*Servo left_arm; //left arm
@@ -20,15 +20,15 @@ VL53L0X sensor;
 // put function declarations here:
 Motors motors;
 Encoders encoders;
-Movement movement(motors, encoders);
+
 
 //Ticker sendTicker;
 //Ticker controlTicker;
 
 ISR(TIMER1_COMPA_vect) {
   //encoders.update();
-  //motors.update(-200,0,0);
- // motors.update(200,wall_error,0);
+ // motors.update(-200,0,0);
+  motors.update(200,0,0);
 }
 
 float line_follow(){
@@ -125,6 +125,7 @@ void feedforwardPWM(int motor, int step = 10, int delay_ms = 300) {
         Serial.println(speed);
     }
 }
+
 void setup() {
   motors.begin();
   encoders.begin();
@@ -194,7 +195,11 @@ void setup() {
   // motors.speed = 0;
 
   
+
+
+  
 }
+//........................................wall following ........................................................//
 float wall_following(){
   uint16_t dist = sensor.readRangeSingleMillimeters();
 
@@ -235,12 +240,7 @@ void loop() {
   Serial.print(encoders.leftRPS());
   Serial.print(".....................");
   Serial.print(encoders.rightRPS());*/
-  movement.turn90(true);   // true = right turn
-  delay(1000);
-
-    // Turn left 90 degrees
-  movement.turn90(false);  // false = left turn
-  delay(1000);
-
+   // true = right turn
+   
 
 }
