@@ -19,8 +19,8 @@ const int REMOTE_PORT = 3333;*/
 
 
 //*****************************encoder pin allocation***********************
-const int LeftEncoderPin1 = 19;//15;
-const int LeftEncoderPin2 = 18;//4;
+const int LeftEncoderPin1 = 18 ;//15;
+const int LeftEncoderPin2 = 19;//4;
 
 const int RightEncoderPin1 = 2;//17;
 const int RightEncoderPin2 = 3;//16; 
@@ -50,7 +50,7 @@ const int MIN_MOTOR_BIAS = 5;
 const int maxMotorPercentage = 100;
 
 //******************************robot dimensions*****************************/
-const float MM_PER_ROTATION = 201.0;//tyre
+const float MM_PER_ROTATION = 204.2;//tyre
 const float PULSES_PER_ROTATION = 880;
 const float ROBOT_RADIUS = 77.5;  //there is some error in this. Although it says radius put Wheel to wheel diameter
 const float DEG_PER_MM_DIFFERENCE = 180.0/(2*ROBOT_RADIUS*PI);
@@ -137,7 +137,7 @@ const int Kd = 10;
 float irCorrection = 0;
 
 
-float speed = 200;
+float speed = 100;
 float correction = 0;
 
 // wall following
@@ -147,9 +147,16 @@ const int XSHUT_PIN_OBJECT = 12;
 const int XSHUT_PIN_WALL_R = 11;
 const float max_wall_error = 20;
 
+float trigger  = 42;
+float eco =43;
+float distance =999;
+
 float element = 0;
 float wall_error = 0;
 
 //robot movemets//
 const int TICKS_90 = static_cast<int>(( (ROBOT_RADIUS* 2 * 3.1416 / 2.0) / MM_PER_ROTATION) * PULSES_PER_ROTATION);
+
+// rotation
+float rotate_ir = A4;
 

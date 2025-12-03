@@ -203,6 +203,7 @@ l_feed_percentage = (1.31699 * pow(10, -10)) * v * v * v * v
     //   percentage = 0;
     // }
     int left_pwm = calculate_pwm(percentage);
+    //Serial.println(left_pwm);
     
 
     set_left_motor_pwm(left_pwm);
@@ -225,6 +226,8 @@ l_feed_percentage = (1.31699 * pow(10, -10)) * v * v * v * v
 
     m_right_motor_percentage = percentage;
     int right_pwm = calculate_pwm(percentage);
+
+    //Serial.println(right_pwm);
     
 
     // Serial.print("   right pwm percentage: ");

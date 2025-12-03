@@ -1,19 +1,12 @@
 #include <Arduino.h>
-//#include "motors.h"
-#include "Ticker.h"
 #include <avr/interrupt.h>
 #include "encoders.h"
 #include"motors.h"
 #include <Wire.h>
 #include <VL53L0X.h>
-<<<<<<< HEAD
 #include "config.h"
 #include <Ticker.h>
 #include <Servo.h>
-=======
-
-//#include <Servo.h>
->>>>>>> origin/task_1
 
 
 Servo left_arm; //left arm
@@ -29,33 +22,21 @@ Motors motors;
 Encoders encoders;
 
 
-//Ticker sendTicker;
-//Ticker controlTicker;
-<<<<<<< HEAD
-// void updateFunctions() {
-//     encoders.update();
-//     motors.update(speed, 0, correction);
-// }
-// ISR(TIMER1_COMPA_vect) {
-//   encoders.update();
-//  // motors.update(0,0,2);
-//   motors.update(speed,0,correction);
 void func() {
   encoders.update();
-  motors.update(speed,0,correction);
+//motors.update(100,0,0);
+  motors.update(-speed,0,-correction);
   }
-=======
-
-ISR(TIMER1_COMPA_vect) {
-  //encoders.update();
- // motors.update(-200,0,0);
-  motors.update(200,0,0);
-}
->>>>>>> origin/task_1
 
 Ticker ticker1(func, 20, 0, MILLIS);
 
-
+void waitMillis(unsigned long interval) {
+    unsigned long start = millis();
+    while (millis() - start < interval) {
+        ticker1.update();  // keep Ticker alive
+        //line_follow();     // keep line-following alive
+    }
+}
 void  line_follow(){
   int s_L2 = analogRead(IR_L2);
   int s_L1 = analogRead(IR_L1);
@@ -101,35 +82,269 @@ void  line_follow(){
 
   if (abs(ir_error) >= 2) {
     speed = 0;
-    correction = -ir_correction/150;
+    correction = -ir_correction/200;
   } else {
-    speed = 200;
+    speed = 150;
     correction =0;
   }
 
 }
 
 
+void rotate_ninety() {
+  Serial.println(1111);
+  while (rotate_ir>=threshold){
+    line_follow();
+    ticker1.update();
+  }
 
-// void setupTimer1() {
+  float ini_angle = encoders.robotAngle();
 
-//     cli();  // Stop interrupts
+  while (abs(encoders.robotAngle()-ini_angle) <=90){
+    correction = 1;
+    ticker1.update();
+  }
+  correction = 0;
+  waitMillis(2000);
 
-//     TCCR1A = 0;            // Normal operation
-//     TCCR1B = 0;
+}
 
-//     // Set compare value for 10ms interval
-//     OCR1A = 2499;           // (16MHz / (64*100)) - 1
+void avoid_obstacal(){
+   
+}
 
-//     TCCR1B |= (1 << WGM12); // CTC mode
-//     TCCR1B |= (1 << CS11) | (1 << CS10); // Prescaler = 64
+void task_1(){
+  int column = 1;
+  while (column <= 7){
+    line_follow();
+    if (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
+  analogRead(IR_R1)>= threshold && analogRead(IR_M)>= threshold){
+    while (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
+  analogRead(IR_R1)>= threshold && analogRead(IR_M)>= threshold) {
+    line_follow();
+    ticker1.update();
+  }
+    column++;
 
-//     TIMSK1 |= (1 << OCIE1A); // Enable interrupt
+  }
+  Serial.println(column);
+  ticker1.update();
+  Serial.println(column);
+    
+  }
+speed=0;correction=0;
+  waitMillis(500);
+  rotate_ninety();
+  while (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
+  analogRead(IR_R1)>= threshold && analogRead(IR_M)>= threshold) {
+    line_follow();
+    ticker1.update();
+  }
+  rotate_ninety();
+}
 
-//     sei();  // Enable interrupts
-// }
+void setup() {
+  motors.begin();
+  encoders.begin();
+  encoders.reset();
+  ticker1.start();
+  ticker1.start();
+  Serial.begin(9600);
 
-/*void feedforwardPWM(int motor, int step = 10, int delay_ms = 300) {
+  pinMode(IR_L2, INPUT);
+    pinMode(IR_L1, INPUT);
+    pinMode(IR_R1, INPUT);
+    pinMode(IR_R2, INPUT);
+    pinMode(IR_M, INPUT);
+
+    pinMode(rotate_ir, INPUT);
+
+  pinMode(XSHUT_PIN_WALL_L, OUTPUT);
+  digitalWrite(XSHUT_PIN_WALL_L, LOW);
+  delay(10);
+  digitalWrite(XSHUT_PIN_WALL_L, HIGH);
+  delay(10);
+
+  Wire.begin(); 
+
+  sensor.init();
+  sensor.setTimeout(500);
+
+  left_arm.attach(31);  
+  right_arm.attach(30);
+  upper.attach(32); 
+  elbow.attach(34);
+  base.attach(33); 
+
+  elbow.write(180);
+  upper.write(180);
+  base.write(0);
+  
+pinMode(trigger, OUTPUT);
+  pinMode(eco, INPUT);
+
+  motors.enable_controllers();
+  
+  //task_1();
+
+  
+}
+
+void moveSmooth(Servo &servo, int fromAngle, int toAngle, int stepwaitMillis) {
+  if (fromAngle < toAngle) {
+    for (int a = fromAngle; a <= toAngle; a++) {
+      servo.write(a);
+      waitMillis(stepwaitMillis);
+    }
+  } else {
+    for (int a = fromAngle; a >= toAngle; a--) {
+      servo.write(a);
+      waitMillis(stepwaitMillis);
+    }
+  }
+}
+
+void movebothSmooth(Servo &left, Servo &right, int startL, int startR, int endL, int endR, int stepwaitMillis) {
+  int steps = max(abs(endL - startL), abs(endR - startR));
+  for (int i = 0; i <= steps; i++) {
+    int currentL = startL + (endL - startL) * i / steps;
+    int currentR = startR + (endR - startR) * i / steps;
+    left.write(currentL);
+    right.write(currentR);
+    waitMillis(stepwaitMillis);
+  }
+}
+
+void boxpickup() {
+
+  moveSmooth(base, 0, 0, 10);
+  upper.write(180);
+  left_arm.write(90);
+  right_arm.write(0);
+ 
+  waitMillis(1200);
+  moveSmooth(elbow, 180, 104, 10);
+  waitMillis(1200);
+  movebothSmooth(left_arm, right_arm, 90, 60, 0, 105, 10);
+  waitMillis(1200);
+  moveSmooth(elbow, 104, 180, 10);
+ 
+}
+
+void ballpickup() {
+  moveSmooth(upper, 0, 90, 15);
+  waitMillis(1200);
+  
+  waitMillis(1200);
+
+  waitMillis(1200);
+  moveSmooth(base, 0, 90, 15);
+  waitMillis(1200);
+  moveSmooth(elbow, 180, 122, 15);
+  waitMillis(1200);
+  movebothSmooth(left_arm, right_arm, 10, 100, 120, 40, 10);
+  waitMillis(1200);
+  moveSmooth(elbow, 122, 180, 15);
+  waitMillis(1200);
+  moveSmooth(base, 90, 0, 15);
+  waitMillis(1200);
+  movebothSmooth(left_arm, right_arm, 85, 65, 10, 105, 10);
+  waitMillis(1200);
+  moveSmooth(upper, 90, 0, 15);
+  waitMillis(1200);
+  
+}
+
+void boxdrop() {
+  moveSmooth(elbow, 180, 104, 10);
+  waitMillis(1200);
+  movebothSmooth(left_arm, right_arm, 85, 65, 0, 105, 10);
+  waitMillis(1200);
+  moveSmooth(elbow, 104, 180, 10);
+  
+}
+
+void wall_following(){
+  //uint16_t dist = sensor.readRangeSingleMillimeters();
+
+  digitalWrite(trigger, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(trigger, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigger, LOW);
+
+  long duration = pulseIn(eco, HIGH, 20000);
+  
+  if (duration != 0) distance =duration * 0.034 / 2;// 999;
+  //else distance = duration * 0.034 / 2;
+
+  float error = distance - 5;
+  Serial.println(duration);
+  if (abs(error)>=2) {
+    error =constrain(error,-2,2);
+    speed = 0;
+    correction = -error/1.2;
+  }else{
+    speed =100;
+    correction=0;
+  }
+  ticker1.update();
+
+
+  // element = dist - WALL_dist;
+
+  // if (element>=max_wall_error){
+  //   element = max_wall_error;
+  // } else if (element<=-max_wall_error){
+  //   element = -max_wall_error;
+  // }
+
+  // Serial.println(dist);
+  
+  // return element;
+    };
+void pick_object(){
+  boxpickup();
+  waitMillis(1000);
+  
+
+
+
+}
+
+void object(){
+     
+  //uint16_t dist = sensor.readRangeSingleMillimeters();
+
+  //line_follow();
+
+  digitalWrite(trigger, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(trigger, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigger, LOW);
+
+  long duration = pulseIn(eco, HIGH, 20000);
+  
+  if (duration != 0) distance =duration * 0.034 / 2;// 999;
+  //else distance = duration * 0.034 / 2;
+  if (distance<=10){
+    correction = 0;
+    speed = 0;
+    pick_object();
+
+  }
+  }
+
+
+
+
+unsigned long lastServoTime = 0;
+int servoState = 0;
+
+void feedforwardPWM(int motor, int step = 10, int delay_ms = 300) {
     // motor: 1 -> left, 2 -> right
     for (int i = -100; i <= 100; i += step) {
       
@@ -143,6 +358,10 @@ void  line_follow(){
             if (i==-100) delay(100);// stop the other motor
         }
 
+        if (abs(i)==30){
+          delay(10000);
+        }
+
         delay(delay_ms);           // wait for motor to stabilize
         encoders.update();         // update encoder readings
         float speed = 2 * encoders.robot_speed(); // mm/s
@@ -154,177 +373,27 @@ void  line_follow(){
         Serial.print(",");
         Serial.println(speed);
     }
-}*/
-
-void rotate_ninety() {
-
-  float ini_angle = encoders.robotAngle();
-
-  while (abs(encoders.robotAngle()-ini_angle) <=90){
-    correction = 1;
-  }
-  correction = 0;
-  delay(2000);
-
-}
-
-<<<<<<< HEAD
-void task_1(){
-  int column = 1;
-  while (column <= 9){
-    line_follow();
-    if (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
-  analogRead(IR_R1)>= threshold && analogRead(IR_M)>= threshold){
-    while (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
-  analogRead(IR_R1)>= threshold && analogRead(IR_M)>= threshold) {
-    line_follow();
-  }
-    column++;
-
-  }
-  Serial.println(column);
-  ticker1.update();
-    
-  }
-  rotate_ninety();
-}
-
-=======
->>>>>>> origin/task_1
-void setup() {
-  motors.begin();
-  encoders.begin();
-  encoders.reset();
-  ticker1.start();
-  ticker1.start();
- // setupTimer1();
-  Serial.begin(9600);
-
-  pinMode(IR_L2, INPUT);
-    pinMode(IR_L1, INPUT);
-    pinMode(IR_R1, INPUT);
-    pinMode(IR_R2, INPUT);
-    pinMode(IR_M, INPUT);
-
-  pinMode(XSHUT_PIN_WALL_L, OUTPUT);
-  digitalWrite(XSHUT_PIN_WALL_L, LOW);
-  delay(10);
-  digitalWrite(XSHUT_PIN_WALL_L, HIGH);
-  delay(10);
-
-  Wire.begin(); 
-
-  sensor.init();
-  sensor.setTimeout(500);
-
-  //task_1();
-  //rotate_ninety();
-
-  left_arm.attach(31);  
-  right_arm.attach(30);
-  upper.attach(32); 
-  elbow.attach(34);
-  base.attach(33); 
-
-  elbow.write(180);
-  upper.write(0);
-
-  motors.enable_controllers();
- 
-  // motors.omega = 0;
-  // motors.speed = 0;
-  task_1();
-
-  
-
-
-  
-}
-//........................................wall following ........................................................//
-float wall_following(){
-  uint16_t dist = sensor.readRangeSingleMillimeters();
-
-
-  element = dist - WALL_dist;
-
-  if (element>=max_wall_error){
-    element = max_wall_error;
-  } else if (element<=-max_wall_error){
-    element = -max_wall_error;
-  }
-
-  Serial.println(dist);
-  
-  return element;
-  };
-
-
-unsigned long lastServoTime = 0;
-int servoState = 0;
-
-void waitMillis(unsigned long interval) {
-    unsigned long start = millis();
-    while (millis() - start < interval) {
-        ticker1.update();  // keep Ticker alive
-        line_follow();     // keep line-following alive
-    }
 }
 
 void loop() {
 
-<<<<<<< HEAD
     // Always update ticker
-    ticker1.update();
+  ticker1.update();
 
     // Always run line follow
     line_follow();
+    // task_1();
+  //  wall_following();
+  //object();
+  //feedforwardPWM(1);
+  //feedforwardPWM(2);
+  Serial.println(encoders.leftRPS());
+  //Serial.println(encoders.leftRPS());
 
-//     // -------- NON-BLOCKING SERVO ARM CONTROL ------------
-//     unsigned long now = millis();
-=======
-  //irCorrection = line_follow()/0.5;
 
-  //Serial.println(irCorrection);
-  
-  // feedforwardPWM(1); // Test left motor
-  // delay(1000);
-  // feedforwardPWM(2); // Test right motor
- // delay(10);
-  /*wall_error = wall_following()*5;
-  Serial.print(wall_error);
-  Serial.print(".....................");
-  Serial.print(encoders.leftRPS());
-  Serial.print(".....................");
-  Serial.print(encoders.rightRPS());*/
-   // true = right turn
-   
->>>>>>> origin/task_1
-
-//     switch (servoState) {
-//         case 0:
-//             elbow.write(180);
-//             lastServoTime = now;
-//             servoState = 1;
-//             break;
-
-//         case 1:
-//             if (now - lastServoTime >= 1500) {
-//                 elbow.write(160);
-//                 lastServoTime = now;
-//                 servoState = 2;
-//             }
-//             break;
-
-//         case 2:
-//             if (now - lastServoTime >= 1500) {
-//                 servoState = 0; // repeat cycle
-//             }
-//             break;
-//     }
-// }
     // -------- BLOCKING SERVO ARM CONTROL ------------
-     elbow.write(180);
+     /*elbow.write(180);
      waitMillis(1500);
      elbow.write(160);
-     waitMillis(1500);
+     waitMillis(1500);*/
  }
