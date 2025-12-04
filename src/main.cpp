@@ -27,7 +27,7 @@ void func() {
   encoders.update();
   sensors.update();
 //motors.update(200,0,0);
-//motors.update(-speed,0,correction);
+motors.update(-speed,0,correction);
   }
 
 Ticker ticker1(func, 20, 0, MILLIS);
@@ -299,12 +299,12 @@ void loop() {
   ticker1.update();
 
     // Always run line follow
-    //line_follow();
+    line_follow();
 
     //boxpickup();
     // task_1();
     //ll_following();
-  sensors.color();
+  //sensors.color();
   //delay(500);
   //ballpickup();
   //object();
