@@ -7,6 +7,7 @@
 #include "config.h"
 #include <Ticker.h>
 #include <Servo.h>
+#include "sensors.h"
 
 
 Servo left_arm; //left arm
@@ -16,16 +17,17 @@ Servo elbow; //rotate
 Servo base;
 
 
-VL53L0X sensor;
 // put function declarations here:
 Motors motors;
 Encoders encoders;
+Sensors sensors;
 
 
 void func() {
   encoders.update();
-//tors.update(200,0,0);
-//tors.update(-speed,0,correction);
+  sensors.update();
+//motors.update(200,0,0);
+//motors.update(-speed,0,correction);
   }
 
 Ticker ticker1(func, 20, 0, MILLIS);
@@ -34,44 +36,11 @@ void waitMillis(unsigned long interval) {
     unsigned long start = millis();
     while (millis() - start < interval) {
         ticker1.update();  // keep Ticker alive
-        //line_follow();     // keep line-following alive
     }
 }
+
 void  line_follow(){
-  int s_L2 = analogRead(IR_L2);
-  int s_L1 = analogRead(IR_L1);
-  int s_R1 = analogRead(IR_R1);
-  int s_R2 = analogRead(IR_R2);
-  //int s_M = analogRead(IR_M);
-
-  int ir_error = 0;  // If error is Negative = line is on left, Positive = line is on right
-  
-  // error calculation
-  if (s_L1 >= threshold && s_L2 <= threshold) {
-    ir_error += 1;
-  }
-  if (s_R1 >= threshold && s_R2 <= threshold) {
-    ir_error -= 1;
-  }
-  if (s_L1 >= threshold && s_L2 >= threshold) {
-    ir_error += 2;
-  }
-  if (s_R1 >= threshold && s_R2 >= threshold) {
-    ir_error -= 2;
-  }
-  if (s_L1 <= threshold && s_L2 >= threshold) {
-    ir_error += 3;
-  }
-  if (s_R1 <= threshold && s_R2 >= threshold ) {
-    ir_error -= 3;
-  }
-  
-  /*if (ir_error == 0) {
-    if (s_M <= threshold && abs(last_nonzero_error) == 3) {
-      ir_error = last_nonzero_error;
-    }
-  }*/
-
+  int ir_error = sensors.line_follow_error();
   // PID calculations
   integral += ir_error;
   float derivative = ir_error - lastError;
@@ -142,36 +111,21 @@ speed=0;correction=0;
   }
   rotate_ninety();
 }
+
 unsigned long readFrequency(bool fs2, bool fs3);
-char getDominantColor();
+//char getDominantColor();
 
 
 void setup() {
   motors.begin();
   encoders.begin();
   encoders.reset();
+  sensors.begin();
   ticker1.start();
-  ticker1.start();
+ // ticker1.start();
   Serial.begin(9600);
 
-  pinMode(IR_L2, INPUT);
-    pinMode(IR_L1, INPUT);
-    pinMode(IR_R1, INPUT);
-    pinMode(IR_R2, INPUT);
-    pinMode(IR_M, INPUT);
-
-    pinMode(rotate_ir, INPUT);
-
-  pinMode(XSHUT_PIN_WALL_L, OUTPUT);
-  digitalWrite(XSHUT_PIN_WALL_L, LOW);
-  delay(10);
-  digitalWrite(XSHUT_PIN_WALL_L, HIGH);
-  delay(10);
-
   Wire.begin(); 
-
-  sensor.init();
-  sensor.setTimeout(500);
 
   left_arm.attach(33);  
   right_arm.attach(31);
@@ -186,15 +140,7 @@ void setup() {
 pinMode(trigger, OUTPUT);
   pinMode(eco, INPUT);
 
-  pinMode(s0, OUTPUT);
-  pinMode(s1, OUTPUT);
-  pinMode(s2, OUTPUT);
-  pinMode(s3, OUTPUT);
-  pinMode(color_out, INPUT);
-
-    digitalWrite(s0, HIGH);
-  digitalWrite(s1, HIGH);
-
+  
   motors.enable_controllers();
   
   //task_1();
@@ -228,62 +174,6 @@ void movebothSmooth(Servo &left, Servo &right, int startL, int startR, int endL,
 
 }
 
-unsigned long readFrequency(bool fs2, bool fs3) {
-  digitalWrite(s2, fs2);
-  digitalWrite(s3, fs3);
-  delay(40);
-  return pulseIn(color_out, LOW);
-}
-
-
-char getDominantColor() {
-  unsigned long red   = readFrequency(LOW, LOW);   // RED filter
-  unsigned long blue  = readFrequency(LOW, HIGH);  // BLUE filter
-  unsigned long green = readFrequency(HIGH, HIGH); // GREEN filter
-
-  float sum = (float)red + (float)green + (float)blue;
-  if (sum == 0) return 'N'; // No detection
-
-  float Rn = red   / sum;
-  float Gn = green / sum;
-  float Bn = blue  / sum;
-
-  if (Rn < Gn && Rn < Bn) return 'R';
-  if (Gn < Rn && Gn < Bn) return 'G';
-  return 'B';
-}
-
-void color() {
-  //eft_arm.write(0);
-  //right_arm.write(90);
-
-  char c = getDominantColor();
-
-  if (c == 'R') {
-    Serial.println("RED");
-   // moveSmooth(elbow, 120, 180, 10);
-   // waitMillis(400000);
-  } 
-  else if (c == 'G') {
-    Serial.println("GREEN");
-    //moveSmooth(elbow, 120, 180, 10);
-   // waitMillis(400000);
-  } 
-  else if (c == 'B') {
-    Serial.println("BLUE");
-  } 
-  else {
-    Serial.println("NO COLOR");
-    //moveSmooth(elbow, 120, 180, 10);
-    //waitMillis(400000);
-  }
-}
-
-
-
-
-
-
 void boxpickup() {
 
   moveSmooth(base, 0, 0, 10);
@@ -294,7 +184,7 @@ void boxpickup() {
   waitMillis(1200);
   moveSmooth(elbow, 180, 120, 10);
   waitMillis(1200);
-  color();
+  //sensors.color();
   movebothSmooth(left_arm, right_arm, 0, 90, 75, 20, 10);
   waitMillis(1200);
   moveSmooth(elbow, 120, 180, 10);
@@ -342,14 +232,14 @@ void boxdrop() {
 void wall_following(){
   //uint16_t dist = sensor.readRangeSingleMillimeters();
 
-  digitalWrite(trigger, LOW);
+  digitalWrite(trigger_r, LOW);
   delayMicroseconds(2);
 
-  digitalWrite(trigger, HIGH);
+  digitalWrite(trigger_r, HIGH);
   delayMicroseconds(10);
-  digitalWrite(trigger, LOW);
+  digitalWrite(trigger_r, LOW);
 
-  long duration = pulseIn(eco, HIGH, 20000);
+  long duration = pulseIn(eco_r, HIGH, 20000);
   
   if (duration != 0) distance =duration * 0.034 / 2;// 999;
   //else distance = duration * 0.034 / 2;
@@ -365,20 +255,8 @@ void wall_following(){
     correction=0;
   }
   ticker1.update();
-
-
-  // element = dist - WALL_dist;
-
-  // if (element>=max_wall_error){
-  //   element = max_wall_error;
-  // } else if (element<=-max_wall_error){
-  //   element = -max_wall_error;
-  // }
-
-  // Serial.println(dist);
-  
-  // return element;
     };
+
 void pick_object(){
   boxpickup();
   waitMillis(1000);
@@ -415,47 +293,6 @@ void object(){
   }
   }
 
-
-
-
-unsigned long lastServoTime = 0;
-int servoState = 0;
-
-void feedforwardPWM(int motor, int step = 10, int delay_ms = 300) {
-    // motor: 1 -> left, 2 -> right
-    for (int i = -100; i <= 100; i += step) {
-      
-        if (motor == 1) {
-            motors.set_left_motor_percentage(i);
-            motors.set_right_motor_percentage(0);
-            if (i==-100) delay(100); // stop the other motor
-        } else if (motor == 2) {
-            motors.set_right_motor_percentage(i);
-            motors.set_left_motor_percentage(0); 
-            if (i==-100) delay(100);// stop the other motor
-        }
-
-        if (abs(i)==30){
-          delay(10000);
-        }
-
-        delay(delay_ms);           // wait for motor to stabilize
-        encoders.update();         // update encoder readings
-        float speed = 2 * encoders.robot_speed(); // mm/s
-
-        // Print the motor, PWM, and measured speed
-        if (motor == 1) Serial.print("Left,");
-        else Serial.print("Right,");
-        Serial.print(i);
-        Serial.print(",");
-        Serial.println(speed);
-    }
-}
-
-
-
-
-
 void loop() {
 
     // Always update ticker
@@ -467,9 +304,9 @@ void loop() {
     //boxpickup();
     // task_1();
     //ll_following();
-  //color();
+  sensors.color();
   //delay(500);
-  ballpickup();
+  //ballpickup();
   //object();
   //feedforwardPWM(1);
   //feedforwardPWM(2);

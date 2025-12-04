@@ -2,78 +2,128 @@
 #include <Arduino.h>
 #include "config.h"
 
-class SensorArray {
+class Sensors;
+
+extern Sensors sensors;
+
+class Sensors {
 private:
-    int pins[5];        // {LM, L, M, R, RM}
-    int values[5];      // Latest readings
-    int S_L2, S_L1, S_M, S_R1, S_R2;
+    float s_L2;
+    float s_L1;
+    float s_M;
+    float s_R1;
+    float s_R2;
 
 public:
-    // Constructor with your exact mapping
-    SensorArray() {
-        pins[0] = A0;   // LeftMost
-        pins[1] = A1;   // Left
-        pins[2] = A2;   // Middle
-        pins[3] = A7;   // Right
-        pins[4] = A3;   // RightMost
-    }
-//....................................................Initialize sensor pins................................................//
-    void begin() {
-        for (int i = 0; i < 5; i++)
-            pinMode(pins[i], INPUT);
-    }
-//......................................................Read all sensors.....................................................//
-    void readSensors() {
-        for (int i = 0; i < 5; i++)
-            values[i] = analogRead(pins[i]);
-    }
 
-    //........................................................Getter functions....................................................//
-    int getLeftMost()  { return values[0]; }
-    int getLeft()      { return values[1]; }
-    int getMiddle()    { return values[2]; }
-    int getRight()     { return values[3]; }
-    int getRightMost() { return values[4]; }
+    void begin()
+  {//set the pins
+    pinMode(IR_L2, INPUT);
+    pinMode(IR_L1, INPUT);
+    pinMode(IR_R1, INPUT);
+    pinMode(IR_R2, INPUT);
+    pinMode(IR_M, INPUT);
+    pinMode(rotate_ir, INPUT);
 
-    //.................................................... Print for debugging.................................................//
-    void print() {
-        assign_values();
-        Serial.print("LM: "); Serial.print(S_L2);
-        Serial.print("  L: "); Serial.print(S_L1);
-        Serial.print("  M: "); Serial.print(S_M);
-        Serial.print("  R: "); Serial.print(S_R1);
-        Serial.print("  RM: "); Serial.println(S_R2);
-    }
-    //......................................Used to assign the used values from the analog reads..................................//
-    void assign_values(){
-        S_L2 =  getLeftMost();
-        S_L1=getLeft() ;
-        S_M = getMiddle();
-        S_R1 = getRight();
-        S_R2= getRightMost();
-    }
-//..............................................Calculate the line position error..........................................//
-    int calculate_error(){
-        assign_values();        
-        int ir_error1 = 0;  // If error is Negative = line is on left, Positive = line is on right
-        if (S_L1 >= threshold && S_L2 <= threshold) {
-            ir_error1 += 1;
-        }
-        if (S_R1 >= threshold && S_R2 <= threshold) {
-            ir_error1 -= 1;
-        }
-        if (S_L1 >= threshold && S_L2 >= threshold) {
-            ir_error1 += 2;
-        }
-        if (S_R1 >= threshold && S_R2 >= threshold) {
-            ir_error1 -= 2;
-        }
-        if (S_L1 <= threshold && S_L2 >= threshold) {
-            ir_error1 += 3;
-        }
-        if (S_R1 <= threshold && S_R2 >= threshold ) {
-            ir_error1 -= 3;
+    pinMode(s0, OUTPUT);
+  pinMode(s1, OUTPUT);
+  pinMode(s2, OUTPUT);
+  pinMode(s3, OUTPUT);
+  pinMode(color_out, INPUT);
+
+    digitalWrite(s0, HIGH);
+  digitalWrite(s1, HIGH);
+
   }
-  return ir_error1;
+
+    void update() {
+        s_L2 = analogRead(IR_L2);
+        s_L1 = analogRead(IR_L1);
+        s_R1 = analogRead(IR_R1);
+        s_R2 = analogRead(IR_R2);
+        s_M = analogRead(IR_M);
+    }
+
+    int line_follow_error(){
+        int ir_error = 0;  // If error is Negative = line is on left, Positive = line is on right
+  
+        // error calculation
+        if (s_L1 >= threshold && s_L2 <= threshold) {
+            ir_error += 1;
+        }
+        if (s_R1 >= threshold && s_R2 <= threshold) {
+            ir_error -= 1;
+        }
+        if (s_L1 >= threshold && s_L2 >= threshold) {
+            ir_error += 2;
+        }
+        if (s_R1 >= threshold && s_R2 >= threshold) {
+            ir_error -= 2;
+        }
+        if (s_L1 <= threshold && s_L2 >= threshold) {
+            ir_error += 3;
+        }
+        if (s_R1 <= threshold && s_R2 >= threshold ) {
+            ir_error -= 3;
+        }
+
+        /*if (ir_error == 0) {
+        if (s_M <= threshold && abs(last_nonzero_error) == 3) {
+        ir_error = last_nonzero_error;
+        }*/
+        
+        return ir_error;
+
+    }
+
+    unsigned long readFrequency(bool fs2, bool fs3) {
+  digitalWrite(s2, fs2);
+  digitalWrite(s3, fs3);
+  delay(40);
+  return pulseIn(color_out, LOW);
+}
+
+
+char getDominantColor() {
+  unsigned long red   = readFrequency(LOW, LOW);   // RED filter
+  unsigned long blue  = readFrequency(LOW, HIGH);  // BLUE filter
+  unsigned long green = readFrequency(HIGH, HIGH); // GREEN filter
+
+  float sum = (float)red + (float)green + (float)blue;
+  if (sum == 0) return 'N'; // No detection
+
+  float Rn = red   / sum;
+  float Gn = green / sum;
+  float Bn = blue  / sum;
+
+  if (Rn < Gn && Rn < Bn) return 'R';
+  else if (Gn < Rn && Gn < Bn) return 'G';
+  else return 'B';
+}
+
+    void color() {
+  //eft_arm.write(0);
+  //right_arm.write(90);
+
+  char c = getDominantColor();
+
+  if (c == 'R') {
+    Serial.println("RED");
+   // moveSmooth(elbow, 120, 180, 10);
+   // waitMillis(400000);
+  } 
+  else if (c == 'G') {
+    Serial.println("GREEN");
+    //moveSmooth(elbow, 120, 180, 10);
+   // waitMillis(400000);
+  } 
+  else if (c == 'B') {
+    Serial.println("BLUE");
+  } 
+  else {
+    Serial.println("NO COLOR");
+    //moveSmooth(elbow, 120, 180, 10);
+    //waitMillis(400000);
+  }
 }
 };
