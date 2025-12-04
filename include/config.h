@@ -147,8 +147,8 @@ const int XSHUT_PIN_OBJECT = 12;
 const int XSHUT_PIN_WALL_R = 11;
 const float max_wall_error = 20;
 
-float trigger  = 42;
-float eco =43;
+float trigger  = 40;//0 for wall 42 for object
+float eco =41;//// wall , 43 for object
 float distance =999;
 
 float element = 0;
@@ -159,4 +159,11 @@ const int TICKS_90 = static_cast<int>(( (ROBOT_RADIUS* 2 * 3.1416 / 2.0) / MM_PE
 
 // rotation
 float rotate_ir = A4;
+
+const int s0 = 44;
+const int s1 = 45;
+const int s2 = 47;
+const int s3 = 46;
+
+const int color_out = 48;
 

@@ -24,8 +24,8 @@ Encoders encoders;
 
 void func() {
   encoders.update();
-//motors.update(100,0,0);
-  motors.update(-speed,0,-correction);
+//tors.update(200,0,0);
+//tors.update(-speed,0,correction);
   }
 
 Ticker ticker1(func, 20, 0, MILLIS);
@@ -142,6 +142,9 @@ speed=0;correction=0;
   }
   rotate_ninety();
 }
+unsigned long readFrequency(bool fs2, bool fs3);
+char getDominantColor();
+
 
 void setup() {
   motors.begin();
@@ -170,18 +173,27 @@ void setup() {
   sensor.init();
   sensor.setTimeout(500);
 
-  left_arm.attach(31);  
-  right_arm.attach(30);
+  left_arm.attach(33);  
+  right_arm.attach(31);
   upper.attach(32); 
   elbow.attach(34);
-  base.attach(33); 
+  base.attach(30); 
 
   elbow.write(180);
-  upper.write(180);
+  upper.write(0);
   base.write(0);
   
 pinMode(trigger, OUTPUT);
   pinMode(eco, INPUT);
+
+  pinMode(s0, OUTPUT);
+  pinMode(s1, OUTPUT);
+  pinMode(s2, OUTPUT);
+  pinMode(s3, OUTPUT);
+  pinMode(color_out, INPUT);
+
+    digitalWrite(s0, HIGH);
+  digitalWrite(s1, HIGH);
 
   motors.enable_controllers();
   
@@ -213,44 +225,107 @@ void movebothSmooth(Servo &left, Servo &right, int startL, int startR, int endL,
     right.write(currentR);
     waitMillis(stepwaitMillis);
   }
+
 }
+
+unsigned long readFrequency(bool fs2, bool fs3) {
+  digitalWrite(s2, fs2);
+  digitalWrite(s3, fs3);
+  delay(40);
+  return pulseIn(color_out, LOW);
+}
+
+
+char getDominantColor() {
+  unsigned long red   = readFrequency(LOW, LOW);   // RED filter
+  unsigned long blue  = readFrequency(LOW, HIGH);  // BLUE filter
+  unsigned long green = readFrequency(HIGH, HIGH); // GREEN filter
+
+  float sum = (float)red + (float)green + (float)blue;
+  if (sum == 0) return 'N'; // No detection
+
+  float Rn = red   / sum;
+  float Gn = green / sum;
+  float Bn = blue  / sum;
+
+  if (Rn < Gn && Rn < Bn) return 'R';
+  if (Gn < Rn && Gn < Bn) return 'G';
+  return 'B';
+}
+
+void color() {
+  //eft_arm.write(0);
+  //right_arm.write(90);
+
+  char c = getDominantColor();
+
+  if (c == 'R') {
+    Serial.println("RED");
+   // moveSmooth(elbow, 120, 180, 10);
+   // waitMillis(400000);
+  } 
+  else if (c == 'G') {
+    Serial.println("GREEN");
+    //moveSmooth(elbow, 120, 180, 10);
+   // waitMillis(400000);
+  } 
+  else if (c == 'B') {
+    Serial.println("BLUE");
+  } 
+  else {
+    Serial.println("NO COLOR");
+    //moveSmooth(elbow, 120, 180, 10);
+    //waitMillis(400000);
+  }
+}
+
+
+
+
+
 
 void boxpickup() {
 
   moveSmooth(base, 0, 0, 10);
-  upper.write(180);
-  left_arm.write(90);
-  right_arm.write(0);
+  upper.write(0);
+  left_arm.write(0);
+  right_arm.write(90);
  
   waitMillis(1200);
-  moveSmooth(elbow, 180, 104, 10);
+  moveSmooth(elbow, 180, 120, 10);
   waitMillis(1200);
-  movebothSmooth(left_arm, right_arm, 90, 60, 0, 105, 10);
+  color();
+  movebothSmooth(left_arm, right_arm, 0, 90, 75, 20, 10);
   waitMillis(1200);
-  moveSmooth(elbow, 104, 180, 10);
+  moveSmooth(elbow, 120, 180, 10);
  
 }
 
 void ballpickup() {
-  moveSmooth(upper, 0, 90, 15);
-  waitMillis(1200);
+  //moveSmooth(upper, 0, 90, 15);
+  //waitMillis(1200);
   
-  waitMillis(1200);
+  //waitMillis(1200);
 
+  //waitMillis(1200);
+  //moveSmooth(base, 0, 90, 15);
+  left_arm.write(0);
+  right_arm.write(90);
   waitMillis(1200);
-  moveSmooth(base, 0, 90, 15);
+  //waitMillis(1200);
+  moveSmooth(elbow, 180, 121, 15);
   waitMillis(1200);
-  moveSmooth(elbow, 180, 122, 15);
+  movebothSmooth(left_arm, right_arm, 0, 90, 80, 20, 10);
   waitMillis(1200);
-  movebothSmooth(left_arm, right_arm, 10, 100, 120, 40, 10);
+  moveSmooth(elbow, 120, 180, 15);
+  waitMillis(3000);
+  //moveSmooth(base, 90, 0, 15);
+  //waitMillis(1200);
+  moveSmooth(elbow, 180, 120, 15);
   waitMillis(1200);
-  moveSmooth(elbow, 122, 180, 15);
+  movebothSmooth(left_arm, right_arm, 80, 20, 0, 90, 10);
   waitMillis(1200);
-  moveSmooth(base, 90, 0, 15);
-  waitMillis(1200);
-  movebothSmooth(left_arm, right_arm, 85, 65, 10, 105, 10);
-  waitMillis(1200);
-  moveSmooth(upper, 90, 0, 15);
+  moveSmooth(elbow, 121, 180, 15);
   waitMillis(1200);
   
 }
@@ -317,7 +392,7 @@ void object(){
      
   //uint16_t dist = sensor.readRangeSingleMillimeters();
 
-  //line_follow();
+  line_follow();
 
   digitalWrite(trigger, LOW);
   delayMicroseconds(2);
@@ -329,10 +404,12 @@ void object(){
   long duration = pulseIn(eco, HIGH, 20000);
   
   if (duration != 0) distance =duration * 0.034 / 2;// 999;
+  Serial.println(distance);
   //else distance = duration * 0.034 / 2;
   if (distance<=10){
     correction = 0;
     speed = 0;
+    
     pick_object();
 
   }
@@ -375,25 +452,34 @@ void feedforwardPWM(int motor, int step = 10, int delay_ms = 300) {
     }
 }
 
+
+
+
+
 void loop() {
 
     // Always update ticker
   ticker1.update();
 
     // Always run line follow
-    line_follow();
+    //line_follow();
+
+    //boxpickup();
     // task_1();
-  //  wall_following();
+    //ll_following();
+  //color();
+  //delay(500);
+  ballpickup();
   //object();
   //feedforwardPWM(1);
   //feedforwardPWM(2);
-  Serial.println(encoders.leftRPS());
+  //Serial.println(encoders.leftRPS());
   //Serial.println(encoders.leftRPS());
 
 
     // -------- BLOCKING SERVO ARM CONTROL ------------
-     /*elbow.write(180);
-     waitMillis(1500);
-     elbow.write(160);
-     waitMillis(1500);*/
+    //  left_arm.write(90);
+    //  waitMillis(1500);
+    //  left_arm.write(0);
+    //  waitMillis(1500);
  }
