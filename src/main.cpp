@@ -105,37 +105,7 @@ void avoid_obstacal(){
    
 }
 
-void task_1(){
-  int column = 1;
-  while (column <= 7){
-    line_follow();
-    if (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
-  analogRead(IR_R1)>= threshold && analogRead(IR_M)>= threshold){
-    while (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
-  analogRead(IR_R1)>= threshold && analogRead(IR_M)>= threshold) {
-    line_follow();
-    ticker1.update();
-  }
-    column++;
 
-  }
-  Serial.println(column);
-  ticker1.update();
-  Serial.println(column);
-    
- }
-
-
-speed=0;correction=0;
-  waitMillis(500);
-  rotate_ninety();
-  while (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
-  analogRead(IR_R1)>= threshold && analogRead(IR_M)>= threshold) {
-    line_follow();
-    ticker1.update();
-  }
-  rotate_ninety();
-}
 
 unsigned long readFrequency(bool fs2, bool fs3);
 //char getDominantColor();
@@ -162,7 +132,7 @@ void setup() {
   base.attach(30); 
 
   elbow.write(180);
-  upper.write(0);
+  upper.write(75);
   base.write(0);
   
   pinMode(trigger_f, OUTPUT);
@@ -226,17 +196,20 @@ void movebothSmooth(Servo &left, Servo &right, int startL, int startR, int endL,
 void boxpickup() {
 
   moveSmooth(base, 0, 0, 10);
-  upper.write(90);
+  upper.write(65);
   left_arm.write(0);
   right_arm.write(90);
  
   waitMillis(1200);
-  moveSmooth(elbow, 180, 120, 10);
+  moveSmooth(elbow, 180, 90, 10);
   waitMillis(1200);
   //sensors.color();
-  movebothSmooth(left_arm, right_arm, 0, 90, 75, 20, 10);
+  //left_arm.write(110);
+//  right_arm.write(10);
+
+  movebothSmooth(left_arm, right_arm, 0, 90, 120, 10, 10);
   waitMillis(1200);
-  moveSmooth(elbow, 120, 180, 10);
+  moveSmooth(elbow, 100, 180, 10);
  
 }
 
@@ -316,7 +289,7 @@ void pick_object(){
 
 }
 
-void object(){
+ void object(){
      
   //uint16_t dist = sensor.readRangeSingleMillimeters();
 
@@ -330,6 +303,7 @@ void object(){
   digitalWrite(trigger_f, LOW);
 
   long duration = pulseIn(echo_f, HIGH, 20000);
+  Serial.println(duration);
   
   if (duration != 0) distance =duration * 0.034 / 2;// 999;
   Serial.println(distance);
@@ -337,6 +311,7 @@ void object(){
   if (distance<=10){
     correction = 0;
     speed = 0;
+    
     
     pick_object();
 
@@ -382,6 +357,41 @@ bool isSelectPressed() {
   return digitalRead(14) == LOW;
 }
 
+
+
+void task_1(){
+  int column = 1;
+  while (column <= 7){
+    line_follow();
+    if (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
+  analogRead(IR_R1)>= threshold && analogRead(IR_M)>= threshold){
+    while (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
+  analogRead(IR_R1)>= threshold && analogRead(IR_M)>= threshold) {
+    line_follow();
+    ticker1.update();
+  }
+    column++;
+
+  }
+  Serial.println(column);
+  ticker1.update();
+  Serial.println(column);
+
+  object();
+    
+ }
+
+
+speed=0;correction=0;
+  waitMillis(500);
+  rotate_ninety();
+  while (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
+  analogRead(IR_R1)>= threshold && analogRead(IR_M)>= threshold) {
+    line_follow();
+    ticker1.update();
+  }
+  rotate_ninety();
+}
 void updateMenus() {
 
   switch (currentMenu) {
@@ -452,7 +462,6 @@ void updateMenus() {
   lastMenu = currentMenu;
 }
 
-
 void loop() {
 
     // Always update ticker
@@ -465,12 +474,12 @@ void loop() {
     //line_follow();
 
     //boxpickup();
-    // task_1();
+    //task_1();
     //ll_following();
   //sensors.color();
   //delay(500);
   //ballpickup();
-  //object();
+ // object();
   //feedforwardPWM(1);
   //feedforwardPWM(2);
   //Serial.println(encoders.leftRPS());
