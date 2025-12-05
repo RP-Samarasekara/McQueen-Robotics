@@ -72,14 +72,16 @@ float speed = 100;
 float correction = 0;
 
 // wall following
-float trigger  = 42; //40 for wall 42 for object
-float eco =43; //41 wall , 43 for object
+const int trigger_f  = 52;
+const int  echo_f =53; 
 
-float trigger_r  = 40; 
-float eco_r =41; 
+const int trigger_r  = 40; 
+const int  echo_r =41; 
 
-float trigger_l  = 49; 
-float eco_l =50; 
+const int trigger_l  = 49;
+const int  echo_l =50;
+
+
 
 float distance =999;
 

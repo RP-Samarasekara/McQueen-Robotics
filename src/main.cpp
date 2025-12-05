@@ -8,6 +8,7 @@
 #include <Ticker.h>
 #include <Servo.h>
 #include "sensors.h"
+#include <LiquidCrystal_I2C.h>
 
 
 Servo left_arm; //left arm
@@ -15,6 +16,28 @@ Servo right_arm; //right arm
 Servo upper; //platform
 Servo elbow; //rotate
 Servo base;
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+enum MenuLevel { MAIN_MENU, TASK_MENU, INDIVIDUAL_MENU };
+MenuLevel currentMenu = MAIN_MENU;
+
+int mainIndex = 0;
+int taskIndex = 0;
+int indivIndex = 0;
+
+unsigned long lastJoy = 0;
+int joyDelay = 200;
+
+String mainMenuItems[2] = {"Tasks", "Individual"};
+String taskMenuItems[7] = {"Task 1","Task 2","Task 3","Task 4","Task 5","Task 6","Task 7"};
+String indivMenuItems[5] = {"Ballpickup", "Boxpickup", "Boxdrop", "Line following", "Wall following"};
+
+int lastMainIndex = -1;
+int lastTaskIndex = -1;
+int lastIndivIndex = -1;
+
+MenuLevel lastMenu = (MenuLevel)-1;
 
 
 // put function declarations here:
@@ -100,7 +123,9 @@ void task_1(){
   ticker1.update();
   Serial.println(column);
     
-  }
+ }
+
+
 speed=0;correction=0;
   waitMillis(500);
   rotate_ninety();
@@ -115,7 +140,10 @@ speed=0;correction=0;
 unsigned long readFrequency(bool fs2, bool fs3);
 //char getDominantColor();
 
+void task_2(){
+  Serial.println("task2");
 
+}
 void setup() {
   motors.begin();
   encoders.begin();
@@ -137,13 +165,34 @@ void setup() {
   upper.write(0);
   base.write(0);
   
-pinMode(trigger, OUTPUT);
-  pinMode(eco, INPUT);
+  pinMode(trigger_f, OUTPUT);
+  pinMode(echo_f, INPUT);
+
+  pinMode(trigger_l, OUTPUT);
+  pinMode(echo_l, INPUT);
+
+  pinMode(trigger_r, OUTPUT);
+  pinMode(echo_r, INPUT);
+
 
   
   motors.enable_controllers();
   
   //task_1();
+
+lcd.init();
+lcd.backlight();
+
+pinMode(14, INPUT_PULLUP); // joystick button
+
+
+
+lcd.clear();
+lcd.setCursor(0, 0);
+lcd.print("> Task 1");
+lcd.setCursor(0, 1);
+lcd.print("  Task 2");
+
 
   
 }
@@ -177,7 +226,7 @@ void movebothSmooth(Servo &left, Servo &right, int startL, int startR, int endL,
 void boxpickup() {
 
   moveSmooth(base, 0, 0, 10);
-  upper.write(0);
+  upper.write(90);
   left_arm.write(0);
   right_arm.write(90);
  
@@ -201,22 +250,22 @@ void ballpickup() {
   //moveSmooth(base, 0, 90, 15);
   left_arm.write(0);
   right_arm.write(90);
-  waitMillis(1200);
-  //waitMillis(1200);
-  moveSmooth(elbow, 180, 121, 15);
-  waitMillis(1200);
-  movebothSmooth(left_arm, right_arm, 0, 90, 80, 20, 10);
-  waitMillis(1200);
-  moveSmooth(elbow, 120, 180, 15);
-  waitMillis(3000);
-  //moveSmooth(base, 90, 0, 15);
-  //waitMillis(1200);
-  moveSmooth(elbow, 180, 120, 15);
-  waitMillis(1200);
-  movebothSmooth(left_arm, right_arm, 80, 20, 0, 90, 10);
-  waitMillis(1200);
-  moveSmooth(elbow, 121, 180, 15);
-  waitMillis(1200);
+  // waitMillis(1200);
+  // //waitMillis(1200);
+  // moveSmooth(elbow, 180, 121, 15);
+  // waitMillis(1200);
+  // movebothSmooth(left_arm, right_arm, 0, 90, 80, 20, 10);
+  // waitMillis(1200);
+  // moveSmooth(elbow, 120, 180, 15);
+  // waitMillis(3000);
+  // //moveSmooth(base, 90, 0, 15);
+  // //waitMillis(1200);
+  // moveSmooth(elbow, 180, 120, 15);
+  // waitMillis(1200);
+  // movebothSmooth(left_arm, right_arm, 80, 20, 0, 90, 10);
+  // waitMillis(1200);
+  // moveSmooth(elbow, 121, 180, 15);
+  // waitMillis(1200);
   
 }
 
@@ -230,6 +279,7 @@ void boxdrop() {
 }
 
 void wall_following(){
+  Serial.print("d");
   //uint16_t dist = sensor.readRangeSingleMillimeters();
 
   digitalWrite(trigger_r, LOW);
@@ -239,7 +289,7 @@ void wall_following(){
   delayMicroseconds(10);
   digitalWrite(trigger_r, LOW);
 
-  long duration = pulseIn(eco_r, HIGH, 20000);
+  long duration = pulseIn(echo_r, HIGH, 20000);
   
   if (duration != 0) distance =duration * 0.034 / 2;// 999;
   //else distance = duration * 0.034 / 2;
@@ -272,14 +322,14 @@ void object(){
 
   line_follow();
 
-  digitalWrite(trigger, LOW);
+  digitalWrite(trigger_f, LOW);
   delayMicroseconds(2);
 
-  digitalWrite(trigger, HIGH);
+  digitalWrite(trigger_f, HIGH);
   delayMicroseconds(10);
-  digitalWrite(trigger, LOW);
+  digitalWrite(trigger_f, LOW);
 
-  long duration = pulseIn(eco, HIGH, 20000);
+  long duration = pulseIn(echo_f, HIGH, 20000);
   
   if (duration != 0) distance =duration * 0.034 / 2;// 999;
   Serial.println(distance);
@@ -293,13 +343,126 @@ void object(){
   }
   }
 
+void drawMenuOptimized(String items[], int size, int index) {
+  lcd.clear();
+
+  // Print current item
+  lcd.setCursor(0, 0);
+  lcd.print("> ");
+  lcd.print(items[index]);
+
+  // Print next item only if it exists
+  lcd.setCursor(0, 1);
+  if (index + 1 < size) {
+    lcd.print("  ");
+    lcd.print(items[index + 1]);
+  } else {
+    lcd.print("  "); // clear second line
+  }
+}
+
+void handleJoystick(int &index, int size) {
+  int y = analogRead(A8); // horizontal
+  int x = analogRead(A9); // vertical
+
+  if (millis() - lastJoy < joyDelay) return;
+
+  // Navigate menu vertically (swapped axes)
+  if (x < 300 && index > 0) { // joystick left → up
+    index--;
+    lastJoy = millis();
+  }
+  if (x > 700 && index < size - 1) { // joystick right → down
+    index++;
+    lastJoy = millis();
+  }
+}
+
+bool isSelectPressed() {
+  return digitalRead(14) == LOW;
+}
+
+void updateMenus() {
+
+  switch (currentMenu) {
+
+    // ---------------- MAIN MENU ----------------
+    case MAIN_MENU:
+      handleJoystick(mainIndex, 2);
+
+      if (mainIndex != lastMainIndex || currentMenu != lastMenu) {
+        drawMenuOptimized(mainMenuItems, 2, mainIndex);
+        lastMainIndex = mainIndex;
+      }
+
+      if (isSelectPressed()) {
+        currentMenu = (mainIndex == 0) ? TASK_MENU : INDIVIDUAL_MENU;
+        waitMillis(100);
+      }
+      break;
+
+    // ---------------- TASK MENU ----------------
+    case TASK_MENU:
+      handleJoystick(taskIndex, 7);
+
+      if (taskIndex != lastTaskIndex || currentMenu != lastMenu) {
+        drawMenuOptimized(taskMenuItems, 7, taskIndex);
+        lastTaskIndex = taskIndex;
+      }
+
+      if (isSelectPressed()) {
+        if (taskIndex == 0) task_1();
+        // add other tasks if needed
+        waitMillis(100);
+      }
+
+      // GO BACK when joystick pushed left at first item
+      if (analogRead(A9) < 100) { // left side
+        currentMenu = MAIN_MENU;
+        waitMillis(100);
+      }
+      break;
+
+    // ---------------- INDIVIDUAL MENU ----------------
+    case INDIVIDUAL_MENU:
+      handleJoystick(indivIndex, 5);
+
+      if (indivIndex != lastIndivIndex || currentMenu != lastMenu) {
+        drawMenuOptimized(indivMenuItems, 5, indivIndex);
+        lastIndivIndex = indivIndex;
+      }
+
+      if (isSelectPressed()) {
+        if (indivIndex == 0) ballpickup();
+        if (indivIndex == 1) boxpickup();
+        if (indivIndex == 2) boxdrop();
+        if (indivIndex == 3) line_follow();
+        if (indivIndex == 4) wall_following();
+        waitMillis(100);
+      }
+
+      // GO BACK when joystick pushed left at first item
+      if (analogRead(A9) < 100) { // left side
+        currentMenu = MAIN_MENU;
+        waitMillis(100);
+      }
+      break;
+  }
+
+  lastMenu = currentMenu;
+}
+
+
 void loop() {
 
     // Always update ticker
   ticker1.update();
+  updateMenus();
+
+
 
     // Always run line follow
-    line_follow();
+    //line_follow();
 
     //boxpickup();
     // task_1();
