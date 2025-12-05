@@ -55,12 +55,16 @@ motors.update(-speed,0,-correction);
 
 Ticker ticker1(func, 20, 0, MILLIS);
 
+
+
 void waitMillis(unsigned long interval) {
     unsigned long start = millis();
     while (millis() - start < interval) {
         ticker1.update();  // keep Ticker alive
     }
 }
+
+int column = 1;
 
 void  line_follow(){
   int ir_error = sensors.line_follow_error();
@@ -81,6 +85,36 @@ void  line_follow(){
   }
 
 }
+
+void go_back(){
+  if(analogRead(rotate_IR_L)>=threshold){
+    Serial.println(analogRead(rotate_IR_L));
+  while(analogRead(rotate_IR_L)>=threshold) {
+    speed = -150;correction=0;
+    ticker1.update();
+  }}
+  speed =0;correction=0;
+  waitMillis(500);
+}
+
+void go_to_end(){
+  while(analogRead(rotate_IR_L)<=threshold){
+    speed=150;correction=0;
+  }
+    while(analogRead(rotate_IR_L)>=threshold){
+      line_follow();
+      ticker1.update();
+    }
+
+    while(analogRead(rotate_IR_L)<=threshold){
+    line_follow();
+      ticker1.update();
+  }
+  
+  
+}
+
+
 
 
 void rotate_ninety(int d) {
@@ -105,46 +139,51 @@ void avoid_obstacal(int r){
    speed =0; correction=0;
   waitMillis(500);
 
+  go_back();
+  //waitMillis(500);
+
   rotate_ninety(r);
   speed =0; correction=0;
   waitMillis(500);
 
-  speed =150; correction=0;
-  waitMillis(1450);
-  speed =0; correction=0;
-  waitMillis(500);
-
-  //waitMillis(500);
-  rotate_ninety(-r);
-speed =150; correction=0;
-  waitMillis(2950);
-
-  //int i =1;
- /* while (i<=3){
-    lcd.setCursor(0, 0);
-    lcd.print(i);
-    line_follow();
-    ticker1.update();
-
-    if (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
-  analogRead(IR_R1)>=threshold && analogRead(IR_M)>= threshold) i++;
-  }*/
-  //speed=150; correction=0;
-  //waitMillis(500);
+  go_to_end();
   speed =0; correction=0;
   waitMillis(500);
 
   rotate_ninety(-r);
-  speed =0; correction=0;
+speed =0; correction=0;
   waitMillis(500);
 
-  speed =150; correction=0;
+  /*speed =150; correction=0;
   waitMillis(1450);
   speed =0; correction=0;
-  waitMillis(500);
+  waitMillis(500);*/
 
   //waitMillis(500);
+  go_to_end();
+  go_to_end();
+  speed =0; correction=0;
+  waitMillis(500);
+
+  rotate_ninety(-r);
+speed =0; correction=0;
+  waitMillis(500);
+
+  go_to_end();
+  speed =0; correction=0;
+  waitMillis(500);
+
   rotate_ninety(r);
+  speed =0; correction=0;
+  waitMillis(500);
+
+  //speed =150; correction=0;
+  //waitMillis(1450);
+  /*speed =0; correction=0;
+  waitMillis(500);
+
+  //waitMillis(500);
+  rotate_ninety(r);*/
 }
 
 
@@ -365,7 +404,7 @@ int detect(){
   if (duration != 0) distance =duration * 0.034 / 2;// 999;
   Serial.println(distance);
   //else distance = duration * 0.034 / 2;
-  if (distance<=12.5){
+  if (distance<=5){
     correction = 0;
     speed = 0;
     left_arm.write(0);
@@ -379,6 +418,7 @@ int detect(){
     if (detect()==0){
       moveSmooth(elbow, 115, 180,10);
       avoid_obstacal(r);
+      column +=2;
 
 
     }
@@ -434,20 +474,24 @@ bool isSelectPressed() {
 
 void next_row(int d){
   float ini_distance1 = encoders.robotDistance();
-  while (encoders.robotDistance()- ini_distance1 <= -1505) {
+ /* while (encoders.robotDistance()- ini_distance1 <= -1505) {
     Serial.println(encoders.robotDistance()- ini_distance1);
     line_follow();
     ticker1.update();
-  }
+  }*/
 /*Serial.println(encoders.robotDistance()- ini_distance1);
  speed=100;correction=0;*/
- speed=150;correction=0;
+ /*speed=150;correction=0;
  waitMillis(500);
   speed=0;correction=0;
-  waitMillis(600);
+  waitMillis(600);*/
+  go_to_end();
+  speed=0;correction=0;
+  waitMillis(500);
   rotate_ninety(d);
+  waitMillis(500);
 
-  float ini_distance2 = encoders.robotDistance();
+  /*float ini_distance2 = encoders.robotDistance();
   while (encoders.robotDistance()-ini_distance2 <= -1505) {
     Serial.println(111);
     line_follow();
@@ -456,8 +500,13 @@ void next_row(int d){
   speed=150;correction=0;
  waitMillis(1500);
   speed=0;correction=0;
+  waitMillis(500);*/
+
+  go_to_end();
+  speed=0;correction=0;
   waitMillis(500);
   rotate_ninety(d);
+  waitMillis(500);
 }  
 
 void task_1(){
@@ -465,9 +514,9 @@ void task_1(){
   int row =1;
 
   while (row<=8){
-    int column = 1;
+   column = 1;
 
-    while (column <= 4){
+    while (column < 9){
     line_follow();
     if (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
   analogRead(IR_R1)>= threshold && analogRead(IR_M)>= threshold){
@@ -571,7 +620,7 @@ void updateMenus() {
 void loop() {
 
     // Always update ticker
-  ticker1.update();
+ // ticker1.update();
   //updateMenus();
 
 
@@ -580,7 +629,9 @@ void loop() {
     //line_follow();
 
     //boxpickup();
-    task_1();
+   task_1();
+   //go_back();
+   Serial.println(analogRead(rotate_IR_L));
     //ll_following();
   //sensors.color();
   //delay(500);
