@@ -111,3 +111,4 @@ const int color_out = 48;
 //vr_y = A8
 //switch =14
 
+int color_value = 0; //0- white, 1 = red, 2 = blue , 3 = green;

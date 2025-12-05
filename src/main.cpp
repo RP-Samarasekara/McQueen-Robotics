@@ -50,7 +50,7 @@ void func() {
   encoders.update();
   sensors.update();
 //motors.update(200,0,1);
-//motors.update(-speed,0,-correction);
+motors.update(-speed,0,-correction);
   }
 
 Ticker ticker1(func, 20, 0, MILLIS);
@@ -101,8 +101,50 @@ void rotate_ninety(int d) {
 
 }
 
-void avoid_obstacal(){
-   
+void avoid_obstacal(int r){
+   speed =0; correction=0;
+  waitMillis(500);
+
+  rotate_ninety(r);
+  speed =0; correction=0;
+  waitMillis(500);
+
+  speed =150; correction=0;
+  waitMillis(1450);
+  speed =0; correction=0;
+  waitMillis(500);
+
+  //waitMillis(500);
+  rotate_ninety(-r);
+speed =150; correction=0;
+  waitMillis(2950);
+
+  //int i =1;
+ /* while (i<=3){
+    lcd.setCursor(0, 0);
+    lcd.print(i);
+    line_follow();
+    ticker1.update();
+
+    if (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
+  analogRead(IR_R1)>=threshold && analogRead(IR_M)>= threshold) i++;
+  }*/
+  //speed=150; correction=0;
+  //waitMillis(500);
+  speed =0; correction=0;
+  waitMillis(500);
+
+  rotate_ninety(-r);
+  speed =0; correction=0;
+  waitMillis(500);
+
+  speed =150; correction=0;
+  waitMillis(1450);
+  speed =0; correction=0;
+  waitMillis(500);
+
+  //waitMillis(500);
+  rotate_ninety(r);
 }
 
 
@@ -201,15 +243,15 @@ void boxpickup() {
   right_arm.write(90);
  
   waitMillis(1200);
-  moveSmooth(elbow, 180, 90, 10);
+  moveSmooth(elbow, 110, 115, 10);
   waitMillis(1200);
   //sensors.color();
   //left_arm.write(110);
 //  right_arm.write(10);
 
-  movebothSmooth(left_arm, right_arm, 0, 90, 120, 10, 10);
+  movebothSmooth(left_arm, right_arm, 0, 90, 110, 10, 10);
   waitMillis(1200);
-  moveSmooth(elbow, 100, 180, 10);
+  moveSmooth(elbow, 115, 180, 10);
  
 }
 
@@ -283,13 +325,28 @@ void wall_following(){
 void pick_object(){
   boxpickup();
   waitMillis(1000);
+  //sensors.color();
+  //waitMillis(40000);
+
   
 
 
 
 }
+int detect(){
 
- void object(){
+ 
+
+  
+  waitMillis(2000);
+  sensors.color();
+
+  return color_value;
+  //waitMillis(40000);
+
+}
+
+ void object(int r){
      
   //uint16_t dist = sensor.readRangeSingleMillimeters();
 
@@ -308,12 +365,30 @@ void pick_object(){
   if (duration != 0) distance =duration * 0.034 / 2;// 999;
   Serial.println(distance);
   //else distance = duration * 0.034 / 2;
-  if (distance<=8){
+  if (distance<=12.5){
     correction = 0;
     speed = 0;
+    left_arm.write(0);
+    right_arm.write(90);
+    base.write(0);
+
+
+
+    moveSmooth(elbow, 180, 115,10);
+
+    if (detect()==0){
+      moveSmooth(elbow, 115, 180,10);
+      avoid_obstacal(r);
+
+
+    }
+    else{
+      pick_object();
+
+    }
     
+
     
-    pick_object();
 
   }
   }
@@ -392,7 +467,7 @@ void task_1(){
   while (row<=8){
     int column = 1;
 
-    while (column <= 8){
+    while (column <= 4){
     line_follow();
     if (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
   analogRead(IR_R1)>= threshold && analogRead(IR_M)>= threshold){
@@ -408,13 +483,14 @@ void task_1(){
   ticker1.update();
   Serial.println(column);
 
-  object();
+  object(row);
     
  }
  
  if (row%2 == 0) next_row(1);
  else next_row(-1);
 row++;
+Serial.println(row);
 }
 }
 
@@ -489,6 +565,9 @@ void updateMenus() {
   lastMenu = currentMenu;
 }
 
+
+
+
 void loop() {
 
     // Always update ticker
@@ -516,9 +595,17 @@ void loop() {
     // -------- BLOCKING SERVO ARM CONTROL ------------
     //  left_arm.write(90);
     //  waitMillis(1500);
-    //  left_arm.write(0);
+   // left_arm.write(0);
+    //right_arm.write(90);
     //  waitMillis(1500);
     //Serial.println(analogRead(rotate_IR_L));
     //Serial.println(analogRead(rotate_IR_R));
-   waitMillis(1000);
+   //moveSmooth(elbow,180 , 115, 10);
+    //ft_arm.write(0);
+    //ght_arm.write(90);
+    //waitMillis(2000);
+    //sensors.color();
+
+   //waitMillis(2000);
+   //moveSmooth(elbow,115 , 180, 10);
  }

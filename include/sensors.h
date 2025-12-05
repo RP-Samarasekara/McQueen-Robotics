@@ -95,13 +95,21 @@ char getDominantColor() {
   float Rn = red   / sum;
   float Gn = green / sum;
   float Bn = blue  / sum;
+  Serial.println(sum);
 
-  if (Rn < Gn && Rn < Bn) return 'R';
+  if (sum <=43) return 'W';
+
+  else if (Rn < Gn && Rn < Bn) return 'R';
   else if (Gn < Rn && Gn < Bn) return 'G';
-  else return 'B';
-}
+  
+  else if (Bn < Gn && Bn < Rn) return 'B';
+  //else if (sum<=50) return 'W';
+   
+  }
 
-    void color() {
+
+    int color() {
+      color_value = 0;
   //eft_arm.write(0);
   //right_arm.write(90);
 
@@ -109,19 +117,27 @@ char getDominantColor() {
 
   if (c == 'R') {
     Serial.println("RED");
+    color_value = 1;
    // moveSmooth(elbow, 120, 180, 10);
    // waitMillis(400000);
   } 
   else if (c == 'G') {
     Serial.println("GREEN");
+    color_value = 3;
     //moveSmooth(elbow, 120, 180, 10);
    // waitMillis(400000);
   } 
   else if (c == 'B') {
     Serial.println("BLUE");
+    color_value = 2;
   } 
+  else if (c== 'W'){
+    Serial.print("obstacle");
+  }
+
+  
   else {
-    Serial.println("NO COLOR");
+    Serial.println("White");
     //moveSmooth(elbow, 120, 180, 10);
     //waitMillis(400000);
   }
