@@ -49,8 +49,8 @@ Sensors sensors;
 void func() {
   encoders.update();
   sensors.update();
-//motors.update(200,0,0);
-motors.update(-speed,0,-correction);
+//motors.update(200,0,1);
+//motors.update(-speed,0,-correction);
   }
 
 Ticker ticker1(func, 20, 0, MILLIS);
@@ -97,7 +97,7 @@ void rotate_ninety(int d) {
     ticker1.update();
   }
   correction = 0;
-  waitMillis(2000);
+  waitMillis(500);
 
 }
 
@@ -308,7 +308,7 @@ void pick_object(){
   if (duration != 0) distance =duration * 0.034 / 2;// 999;
   Serial.println(distance);
   //else distance = duration * 0.034 / 2;
-  if (distance<=10){
+  if (distance<=8){
     correction = 0;
     speed = 0;
     
@@ -359,26 +359,27 @@ bool isSelectPressed() {
 
 void next_row(int d){
   float ini_distance1 = encoders.robotDistance();
-  /*while (encoders.robotDistance()- ini_distance1 <= -1505) {
+  while (encoders.robotDistance()- ini_distance1 <= -1505) {
     Serial.println(encoders.robotDistance()- ini_distance1);
     line_follow();
     ticker1.update();
-  }*/
- Serial.println(encoders.robotDistance()- ini_distance1);
- speed=100;correction=0;
- waitMillis(1000);
+  }
+/*Serial.println(encoders.robotDistance()- ini_distance1);
+ speed=100;correction=0;*/
+ speed=150;correction=0;
+ waitMillis(500);
   speed=0;correction=0;
-  waitMillis(500);
+  waitMillis(600);
   rotate_ninety(d);
 
-  /*float ini_distance2 = encoders.robotDistance();
+  float ini_distance2 = encoders.robotDistance();
   while (encoders.robotDistance()-ini_distance2 <= -1505) {
     Serial.println(111);
     line_follow();
     ticker1.update();
-  }*/
-  speed=100;correction=0;
- waitMillis(2000);
+  }
+  speed=150;correction=0;
+ waitMillis(1500);
   speed=0;correction=0;
   waitMillis(500);
   rotate_ninety(d);
@@ -391,7 +392,7 @@ void task_1(){
   while (row<=8){
     int column = 1;
 
-    while (column <= 2){
+    while (column <= 8){
     line_follow();
     if (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
   analogRead(IR_R1)>= threshold && analogRead(IR_M)>= threshold){
@@ -411,7 +412,7 @@ void task_1(){
     
  }
  
- if (row%2 == 0) next_row(11);
+ if (row%2 == 0) next_row(1);
  else next_row(-1);
 row++;
 }
