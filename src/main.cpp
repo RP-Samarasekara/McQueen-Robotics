@@ -50,7 +50,7 @@ void func() {
   encoders.update();
   sensors.update();
 //motors.update(200,0,0);
-motors.update(-speed,0,correction);
+motors.update(-speed,0,-correction);
   }
 
 Ticker ticker1(func, 20, 0, MILLIS);
@@ -74,7 +74,7 @@ void  line_follow(){
 
   if (abs(ir_error) >= 2) {
     speed = 0;
-    correction = -ir_correction/200;
+    correction = -ir_correction/170;
   } else {
     speed = 150;
     correction =0;
@@ -83,7 +83,7 @@ void  line_follow(){
 }
 
 
-void rotate_ninety() {
+void rotate_ninety(int d) {
   Serial.println(1111);
   while (rotate_ir>=threshold){
     line_follow();
@@ -93,7 +93,7 @@ void rotate_ninety() {
   float ini_angle = encoders.robotAngle();
 
   while (abs(encoders.robotAngle()-ini_angle) <=90){
-    correction = 1;
+     correction = d;
     ticker1.update();
   }
   correction = 0;
@@ -357,11 +357,41 @@ bool isSelectPressed() {
   return digitalRead(14) == LOW;
 }
 
+void next_row(int d){
+  float ini_distance1 = encoders.robotDistance();
+  /*while (encoders.robotDistance()- ini_distance1 <= -1505) {
+    Serial.println(encoders.robotDistance()- ini_distance1);
+    line_follow();
+    ticker1.update();
+  }*/
+ Serial.println(encoders.robotDistance()- ini_distance1);
+ speed=100;correction=0;
+ waitMillis(1000);
+  speed=0;correction=0;
+  waitMillis(500);
+  rotate_ninety(d);
 
+  /*float ini_distance2 = encoders.robotDistance();
+  while (encoders.robotDistance()-ini_distance2 <= -1505) {
+    Serial.println(111);
+    line_follow();
+    ticker1.update();
+  }*/
+  speed=100;correction=0;
+ waitMillis(2000);
+  speed=0;correction=0;
+  waitMillis(500);
+  rotate_ninety(d);
+}  
 
 void task_1(){
-  int column = 1;
-  while (column <= 7){
+  
+  int row =1;
+
+  while (row<=8){
+    int column = 1;
+
+    while (column <= 2){
     line_follow();
     if (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
   analogRead(IR_R1)>= threshold && analogRead(IR_M)>= threshold){
@@ -380,18 +410,14 @@ void task_1(){
   object();
     
  }
-
-
-speed=0;correction=0;
-  waitMillis(500);
-  rotate_ninety();
-  while (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
-  analogRead(IR_R1)>= threshold && analogRead(IR_M)>= threshold) {
-    line_follow();
-    ticker1.update();
-  }
-  rotate_ninety();
+ 
+ if (row%2 == 0) next_row(11);
+ else next_row(-1);
+row++;
 }
+}
+
+
 void updateMenus() {
 
   switch (currentMenu) {
@@ -466,7 +492,7 @@ void loop() {
 
     // Always update ticker
   ticker1.update();
-  updateMenus();
+  //updateMenus();
 
 
 
@@ -474,7 +500,7 @@ void loop() {
     //line_follow();
 
     //boxpickup();
-    //task_1();
+    task_1();
     //ll_following();
   //sensors.color();
   //delay(500);
@@ -491,4 +517,7 @@ void loop() {
     //  waitMillis(1500);
     //  left_arm.write(0);
     //  waitMillis(1500);
+    //Serial.println(analogRead(rotate_IR_L));
+    //Serial.println(analogRead(rotate_IR_R));
+   waitMillis(1000);
  }

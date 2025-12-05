@@ -54,6 +54,9 @@ const int IR_M = A2;
 const int IR_R1 = A3;
 const int IR_R2 = A4;
 
+const int rotate_IR_L = A11;
+const int rotate_IR_R = A12;
+
 
 const int threshold = 850;
  int last_nonzero_error = 0;
