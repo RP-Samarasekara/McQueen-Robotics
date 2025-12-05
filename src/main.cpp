@@ -49,7 +49,7 @@ Sensors sensors;
 void func() {
   encoders.update();
   sensors.update();
-//motors.update(200,0,0);
+//motors.update(200,0,1);
 motors.update(-speed,0,-correction);
   }
 
@@ -74,6 +74,7 @@ void  line_follow(){
 
   if (abs(ir_error) >= 2) {
     speed = 0;
+    waitMillis(100);
     correction = -ir_correction/170;
   } else {
     speed = 150;
@@ -97,7 +98,8 @@ void rotate_ninety(int d) {
     ticker1.update();
   }
   correction = 0;
-  waitMillis(2000);
+  waitMillis(500);
+ 
 
 }
 
@@ -308,7 +310,7 @@ void pick_object(){
   if (duration != 0) distance =duration * 0.034 / 2;// 999;
   Serial.println(distance);
   //else distance = duration * 0.034 / 2;
-  if (distance<=10){
+  if (distance<=8){
     correction = 0;
     speed = 0;
     
@@ -357,28 +359,32 @@ bool isSelectPressed() {
   return digitalRead(14) == LOW;
 }
 
+
+
+
 void next_row(int d){
   float ini_distance1 = encoders.robotDistance();
-  /*while (encoders.robotDistance()- ini_distance1 <= -1505) {
+  while (encoders.robotDistance()- ini_distance1 <= -1505) {
     Serial.println(encoders.robotDistance()- ini_distance1);
     line_follow();
     ticker1.update();
-  }*/
- Serial.println(encoders.robotDistance()- ini_distance1);
- speed=100;correction=0;
- waitMillis(1000);
+  }
+/*Serial.println(encoders.robotDistance()- ini_distance1);
+ speed=100;correction=0;*/
+ speed=150;correction=0;
+ waitMillis(500);
   speed=0;correction=0;
-  waitMillis(500);
+  waitMillis(600);
   rotate_ninety(d);
 
-  /*float ini_distance2 = encoders.robotDistance();
+  float ini_distance2 = encoders.robotDistance();
   while (encoders.robotDistance()-ini_distance2 <= -1505) {
     Serial.println(111);
     line_follow();
     ticker1.update();
-  }*/
-  speed=100;correction=0;
- waitMillis(2000);
+  }
+  speed=150;correction=0;
+ waitMillis(1500);
   speed=0;correction=0;
   waitMillis(500);
   rotate_ninety(d);
@@ -391,7 +397,7 @@ void task_1(){
   while (row<=8){
     int column = 1;
 
-    while (column <= 2){
+    while (column <= 8){
     line_follow();
     if (analogRead(IR_L2)>= threshold && analogRead(IR_L1)>= threshold && analogRead(IR_R2)>= threshold &&
   analogRead(IR_R1)>= threshold && analogRead(IR_M)>= threshold){
@@ -411,11 +417,54 @@ void task_1(){
     
  }
  
- if (row%2 == 0) next_row(11);
+ if (row%2 == 0) next_row(1);
  else next_row(-1);
 row++;
 }
 }
+//////////////////////////////////////...........................Obstacle avoidance functions....................................../////////
+// int obstacle_location[4][2];
+// int i=0;
+// bool obstacle_detected(){
+//   if (trigger_f)
+//   return true;
+// }
+
+// //........if_obstacle_detected........//
+// void avoid_obstacal(int r, int c){//implement avoidance maneuvers
+//     obstacle_location[i][0]=r;
+//     obstacle_location[i][1]=c;
+//     i++;
+//     //check single
+//     bool contains(int arr[][2], int size, int r, int c) {
+//     for (int i = 0; i < size; i++) {
+//         if (arr[i][0] == r && arr[i][1] == c) {
+//             return true;
+//         }
+//     }
+//     return false;
+// }
+
+// // Check multiple neighbors
+// bool checkNeighbors(int arr[][2], int size, int r, int c) {
+//     // List of neighbors to check
+//     int neighbors[3][2] = {
+//         {r-1, c},
+//         {r-1, c+1},
+//         {r-1, c+2}
+//     };
+
+//     for (int i = 0; i < 3; i++) {
+//         if (contains(arr, size, neighbors[i][0], neighbors[i][1])) {
+//             return false;  // found one of the neighbors
+//         }
+//     }
+//     return true;  // none of them found
+// }
+
+//   }
+   
+
 
 
 void updateMenus() {
@@ -488,6 +537,14 @@ void updateMenus() {
   lastMenu = currentMenu;
 }
 
+void dash_follow(){
+  line_follow();
+  if (analogRead(IR_L2)<= threshold && analogRead(IR_L1)<= threshold && analogRead(IR_R2)<= threshold &&
+  analogRead(IR_R1)<= threshold && analogRead(IR_M)<= threshold){
+    motors.update(150,0,0);
+
+}
+}
 void loop() {
 
     // Always update ticker
@@ -498,14 +555,15 @@ void loop() {
 
     // Always run line follow
     //line_follow();
+    dash_follow();
 
     //boxpickup();
-    task_1();
+    //task_1();
     //ll_following();
   //sensors.color();
   //delay(500);
   //ballpickup();
- // object();
+ //object();
   //feedforwardPWM(1);
   //feedforwardPWM(2);
   //Serial.println(encoders.leftRPS());
