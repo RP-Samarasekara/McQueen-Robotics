@@ -97,7 +97,7 @@ char getDominantColor() {
   float Bn = blue  / sum;
   Serial.println(sum);
 
-  if (sum <=43) return 'W';
+  if (sum <=38) return 'W';
 
   else if (Rn < Gn && Rn < Bn) return 'R';
   else if (Gn < Rn && Gn < Bn) return 'G';

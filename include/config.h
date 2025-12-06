@@ -58,7 +58,7 @@ const int rotate_IR_L = A11;
 const int rotate_IR_R = A12;
 
 
-const int threshold = 850;
+const int threshold = 450;
  int last_nonzero_error = 0;
  int lastError = 0;
  float integral = 0;
