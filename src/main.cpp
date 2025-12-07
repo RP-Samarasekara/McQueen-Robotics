@@ -71,6 +71,22 @@ unsigned long readFrequency(bool fs2, bool fs3);
 
 void task_2(){
   Serial.println("task2");
+  while(analogRead(IR_L2<threshold)|| analogRead(IR_L1<threshold)||analogRead(IR_M<threshold)||analogRead(IR_R1<threshold)||analogRead(IR_R2<threshold)){
+    basics.line_follow();
+    ticker1.update();
+
+    if (analogRead(rotate_IR_L)<threshold||analogRead(rotate_IR_R)<threshold){
+      speed=0;correction=-1;
+      waitMillis(500);
+      speed=0;correction=0;
+      waitMillis(500);
+
+      speed=-100;correction=0;
+      waitMillis(500);
+      speed=0;correction=0;
+      waitMillis(500);
+    }
+  }
 
 }
 void setup() {
@@ -226,14 +242,14 @@ void loop() {
  // ticker1.update();
   //updateMenus();
 
-
+task_2();
 
     // Always run line follow
     //line_follow();
 
     //boxpickup();
     //drop_object(7,5);
-   task_1.task_1();
+   //task_1.task_1();
    //go_back();
    //Serial.println(analogRead(rotate_IR_L));
     //ll_following();
@@ -253,8 +269,8 @@ void loop() {
    // left_arm.write(0);
     //right_arm.write(90);
     //  waitMillis(1500);
-   // Serial.println(analogRead(rotate_IR_L));
-    Serial.println(analogRead(IR_R1));
+    Serial.println(analogRead(rotate_IR_L));
+   // Serial.println(analogRead(IR_R1));
    //moveSmooth(elbow,180 , 115, 10);
     //ft_arm.write(0);
     //ght_arm.write(90);

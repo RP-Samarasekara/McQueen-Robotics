@@ -56,21 +56,22 @@ void go_back(){
 }
 
 void go_to_end(){
-  if (analogRead(rotate_IR_L)<=threshold || analogRead(rotate_IR_L)<=threshold){
-  while(analogRead(rotate_IR_L)<=threshold || analogRead(rotate_IR_L)<=threshold){
+  if (analogRead(rotate_IR_L)<=threshold && analogRead(rotate_IR_L)<=threshold){
+  while(analogRead(rotate_IR_L)<=threshold && analogRead(rotate_IR_L)<=threshold){
     basics.line_follow();
     ticker1.update();
-  }}else {
-    while(analogRead(rotate_IR_L)>=threshold && analogRead(rotate_IR_L)>=threshold){
+  }}
+    //speed=120;correction=0;ticker1.update();
+   // waitMillis(200);
+    while(analogRead(rotate_IR_L)>=threshold || analogRead(rotate_IR_L)>=threshold){
       basics.line_follow();
       ticker1.update();
-    }}
+    }
 
     while(analogRead(rotate_IR_L)<=threshold || analogRead(rotate_IR_L)<=threshold ){
     basics.line_follow();
       ticker1.update();
-  }
-  
+    }
   
 }
 
@@ -127,7 +128,7 @@ void avoid_obstacal(int r){
   waitMillis(500);
 
   go_back();
-  //waitMillis(500);
+  waitMillis(500);
 
   rotate_ninety(r);
   speed =0; correction=0;
@@ -164,6 +165,10 @@ speed =0; correction=0;
   speed =0; correction=0;
   waitMillis(500);
 
+  speed =-120;correction=0;
+  waitMillis(500);
+  speed =0; correction=0;
+  waitMillis(500);
   //speed =150; correction=0;
   //waitMillis(1450);
   /*speed =0; correction=0;
@@ -204,13 +209,13 @@ void drop_object( int colour,int r, int c) {
  int end;
 
  if (r%2==0){
-  if (colour=1) end=3;
- else if (colour=2) end=7;
+  if (colour==1) end=3;
+ else if (colour==2) end=7;
  else end =5;
  }
  else{
-if (colour=1) end=7;
- else if (colour=2) end=3;
+if (colour==1) end=7;
+ else if (colour==2) end=3;
  else end =5;
 
  }
@@ -260,15 +265,21 @@ else { rotation2=1;turn=-1 ;}
  go(-turn,1,abs(distance));
  speed=0;correction=0;
  waitMillis(500);
+ go_to_end();
+ speed=0;correction=0;
+ waitMillis(500);
  rotate_ninety(-rotation2);
  speed=0;correction=0;
  waitMillis(500);
 
- go(r,1,8-r);
+ go(-r,1,9-r);
 
  speed=0;correction=0;
  waitMillis(500);
- rotate_ninety(rotation2);
+ go_to_end();
+ speed=0;correction=0;
+ waitMillis(500);
+ rotate_ninety(rotation);
  speed=0;correction=0;
  waitMillis(500);
 
@@ -302,25 +313,39 @@ int object(int r, int c){
   Serial.println(distance);
   //else distance = duration * 0.034 / 2;
   if (distance<=7.5){
+    
     correction = 0;
     speed = 0;
-    basics.check();
+    
+    int rot;
+
+    if (r%2==0) rot = -1;
+    else rot =1;
+if (obstacal){
+      avoid_obstacal(rot);
+      return(2);
+}else{
+  basics.check();
 
     int colour =detect();
-
-    if (colour==0){
+      if (colour==0){
       basics.take_back();
-      avoid_obstacal(-r);
+      avoid_obstacal(rot);
       return(2);
 
 
     }
     else{
       pick_object();
+      obstacal=true;
       drop_object(colour,r,c+1);
+      obstacal=false;
       return(1);
 
     }
+
+}
+  
 
   }else return(0);
   }
