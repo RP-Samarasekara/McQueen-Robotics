@@ -58,7 +58,7 @@ const int rotate_IR_L = A11;
 const int rotate_IR_R = A12;
 
 
-const int threshold = 450;
+const int threshold = 800;
  int last_nonzero_error = 0;
  int lastError = 0;
  float integral = 0;
@@ -75,10 +75,10 @@ float speed = 100;
 float correction = 0;
 
 // wall following
-const int trigger_f  = 52;
-const int  echo_f =53; 
+const int trigger_f  = 24;
+const int  echo_f =25; 
 
-const int trigger_r  = 40; 
+const int trigger_r  = 22; 
 const int  echo_r =41; 
 
 const int trigger_l  = 49;

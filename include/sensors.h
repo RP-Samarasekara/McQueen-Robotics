@@ -33,6 +33,15 @@ public:
 
     digitalWrite(s0, HIGH);
   digitalWrite(s1, HIGH);
+  pinMode(trigger_f, OUTPUT);
+  pinMode(echo_f, INPUT);
+
+  pinMode(trigger_l, OUTPUT);
+  pinMode(echo_l, INPUT);
+
+  pinMode(trigger_r, OUTPUT);
+  pinMode(echo_r, INPUT);
+
 
   }
 
@@ -141,5 +150,43 @@ char getDominantColor() {
     //moveSmooth(elbow, 120, 180, 10);
     //waitMillis(400000);
   }
+}
+
+long r_ultrasonic(){
+  Serial.println(558);
+  digitalWrite(trigger_r, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(trigger_r, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigger_r, LOW);
+
+  long duration = pulseIn(echo_r, HIGH, 20000);
+  Serial.println(duration);
+  return(duration);
+}
+
+long l_ultrasonic(){
+  digitalWrite(trigger_l, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(trigger_l, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigger_l, LOW);
+
+  long duration = pulseIn(echo_l, HIGH, 20000);
+  return(duration);
+}
+
+long f_ultrasonic(){
+  digitalWrite(trigger_f, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(trigger_f, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigger_f, LOW);
+
+  long duration = pulseIn(echo_f, HIGH, 20000);
+  return(duration);
 }
 };
