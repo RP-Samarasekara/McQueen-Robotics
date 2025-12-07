@@ -162,7 +162,7 @@ void wall_following(){
   Serial.print("d");
   //uint16_t dist = sensor.readRangeSingleMillimeters();
 
-  long duration = sensors.r_ultrasonic();
+  long duration = sensors.l_ultrasonic();
   //Serial.print(duration);
   
   if (duration != 0) distance =duration * 0.034 / 2;// 999;
@@ -174,7 +174,7 @@ void wall_following(){
   if (abs(error)>=2) {
     error =constrain(error,-2,2);
     speed = 0;
-    correction = -error/1.2;
+    correction =- error/1.2;
   }else{
     speed =100;
     correction=0;

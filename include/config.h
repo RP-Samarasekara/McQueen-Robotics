@@ -59,6 +59,7 @@ const int rotate_IR_R = A12;
 
 
 const int threshold = 800;
+const int threshold_2 = 600;
  int last_nonzero_error = 0;
  int lastError = 0;
  float integral = 0;
@@ -81,8 +82,8 @@ const int  echo_f =25;
 const int trigger_r  = 22; 
 const int  echo_r =41; 
 
-const int trigger_l  = 49;
-const int  echo_l =50;
+const int trigger_l  = 7;
+const int  echo_l =6;
 
 
 

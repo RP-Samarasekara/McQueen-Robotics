@@ -45,7 +45,7 @@ class Task_1{
     }
 
 void go_back(){
-  if(analogRead(rotate_IR_L)>=threshold && analogRead(rotate_IR_L)>=threshold){
+  if(analogRead(rotate_IR_L)>=threshold&& analogRead(rotate_IR_L)>=threshold){
     Serial.println(analogRead(rotate_IR_L));
   while(analogRead(rotate_IR_L)>=threshold && analogRead(rotate_IR_L)>=threshold) {
     speed = -150;correction=0;
