@@ -37,7 +37,7 @@ class Task_1{
   ticker1.update();
 //   Serial.println(column);
 
-  int increment = object(row,i);
+  int increment = object(row,i,0);
   i=i+increment;
     
  }
@@ -45,9 +45,9 @@ class Task_1{
     }
 
 void go_back(){
-  if(analogRead(rotate_IR_L)>=threshold&& analogRead(rotate_IR_L)>=threshold){
+  if(analogRead(rotate_IR_L)>=threshold_2&& analogRead(rotate_IR_L)>=threshold_2){
     Serial.println(analogRead(rotate_IR_L));
-  while(analogRead(rotate_IR_L)>=threshold && analogRead(rotate_IR_L)>=threshold) {
+  while(analogRead(rotate_IR_L)>=threshold_2 && analogRead(rotate_IR_L)>=threshold_2) {
     speed = -150;correction=0;
     ticker1.update();
   }}
@@ -56,21 +56,26 @@ void go_back(){
 }
 
 void go_to_end(){
-  if (analogRead(rotate_IR_L)<=threshold && analogRead(rotate_IR_L)<=threshold){
-  while(analogRead(rotate_IR_L)<=threshold && analogRead(rotate_IR_L)<=threshold){
+  if (analogRead(rotate_IR_R)<=threshold_2 || analogRead(rotate_IR_L)<=threshold_2){
+  while(analogRead(rotate_IR_R)<=threshold_2 || analogRead(rotate_IR_L)<=threshold_2){
     basics.line_follow();
+    //speed=150;correction=0;
     ticker1.update();
   }}
     //speed=120;correction=0;ticker1.update();
    // waitMillis(200);
-    while(analogRead(rotate_IR_L)>=threshold || analogRead(rotate_IR_L)>=threshold){
+    while(analogRead(rotate_IR_R)>=threshold_2 || analogRead(rotate_IR_L)>=threshold_2){
       basics.line_follow();
       ticker1.update();
+      Serial.println(111);
+      Serial.println(analogRead(rotate_IR_L));
+      Serial.println(analogRead(rotate_IR_R));
     }
 
-    while(analogRead(rotate_IR_L)<=threshold || analogRead(rotate_IR_L)<=threshold ){
+    while(analogRead(rotate_IR_R)<=threshold_2 || analogRead(rotate_IR_L)<=threshold_2 ){
     basics.line_follow();
       ticker1.update();
+      Serial.println(222222);
     }
   
 }
@@ -100,7 +105,7 @@ void rotate_ninety(int d) {
 void rotate_oneeighty(){
 float ini_angle = encoders.robotAngle();
 
-  while (abs(encoders.robotAngle()-ini_angle) <=90){
+  while (abs(encoders.robotAngle()-ini_angle) <=180){
      correction = 1;
     ticker1.update();
   }
@@ -108,13 +113,14 @@ float ini_angle = encoders.robotAngle();
   waitMillis(500);
 }
 
-void next_row(int d){
+void next_row(int d,int r){
   
   go_to_end();
   speed=0;correction=0;
   waitMillis(500);
   rotate_ninety(d);
   waitMillis(500);
+  object(r,9,10);
 
   go_to_end();
   speed=0;correction=0;
@@ -181,7 +187,7 @@ speed =0; correction=0;
 void drop_object( int colour,int r, int c) {
 
   //int c1 = c; int r1=r;
-
+int pos=colour;
   int rotation = 0;
 
   if (r%2==0) rotation =1;
@@ -193,12 +199,20 @@ void drop_object( int colour,int r, int c) {
 
    
  
- go_to_end();
+ 
+
+if (pos>=10){
+colour-=10;
+}else{
+go_to_end();
  speed=0;correction=0;
  waitMillis(500);
- rotate_ninety(rotation);
+
+rotate_ninety(rotation);
  speed=0;correction=0;
  waitMillis(500);
+}
+
  go(r,r,8);
 
  go_to_end();
@@ -242,7 +256,7 @@ else { rotation2=1;turn=-1 ;}
  speed=0;correction=0;
  waitMillis(500);
 
- go(turn,1,abs(distance));
+ go(turn,1,abs(distance)-1);
 
  go_to_end();
 
@@ -262,7 +276,7 @@ else { rotation2=1;turn=-1 ;}
  rotate_ninety(-rotation2);
  speed=0;correction=0;
  waitMillis(500);
- go(-turn,1,abs(distance));
+ go(-turn,1,abs(distance)-1);
  speed=0;correction=0;
  waitMillis(500);
  go_to_end();
@@ -279,10 +293,14 @@ else { rotation2=1;turn=-1 ;}
  go_to_end();
  speed=0;correction=0;
  waitMillis(500);
- rotate_ninety(rotation);
- speed=0;correction=0;
+ if (pos<=10) {rotate_ninety(rotation);speed=0;correction=0;
  waitMillis(500);
-
+}
+ else {rotate_oneeighty();speed =-120;correction=0;
+  waitMillis(500);
+  speed =0; correction=0;
+  waitMillis(500);}
+ 
  }
  void pick_object(){
   basics.boxpickup();
@@ -301,7 +319,7 @@ int detect(){
 
 }
 
-int object(int r, int c){
+int object(int r, int c,int pos){
      
   //uint16_t dist = sensor.readRangeSingleMillimeters();
 
@@ -312,7 +330,7 @@ int object(int r, int c){
   if (duration != 0) distance =duration * 0.034 / 2;// 999;
   Serial.println(distance);
   //else distance = duration * 0.034 / 2;
-  if (distance<=7.5){
+  if (distance<=11.2){
     
     correction = 0;
     speed = 0;
@@ -338,7 +356,7 @@ if (obstacal){
     else{
       pick_object();
       obstacal=true;
-      drop_object(colour,r,c+1);
+      drop_object(colour+pos,r,c+1);
       obstacal=false;
       return(1);
 
@@ -353,14 +371,26 @@ if (obstacal){
 
 
 void task_1(){
+  go_back();
+  speed=0;correction=0;
+  waitMillis(500);
+  rotate_ninety(1);
+  speed=0;correction=0;
+  waitMillis(500);
+  go_to_end();
+  speed=0;correction=0;
+  waitMillis(500);
+  rotate_ninety(-1);
+  speed=0;correction=0;
+  waitMillis(500);
   
   int row =1;
 
   while (row<=8){
    go(row,1,9);
  
- if (row%2 == 0) next_row(1);
- else next_row(-1);
+ if (row%2 == 0) next_row(1,row);
+ else next_row(-1,row);
 row++;
 Serial.println(row);
 }
