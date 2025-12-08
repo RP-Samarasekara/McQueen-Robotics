@@ -189,4 +189,33 @@ long f_ultrasonic(){
   long duration = pulseIn(echo_f, HIGH, 20000);
   return(duration);
 }
+
+bool get_distance(){
+  float distance;
+  float duration = f_ultrasonic();
+  if (duration != 0) distance =duration * 0.034 / 2;// 999;
+  Serial.println(distance);
+  if (distance>=5) return(false);
+  else return(true);
+}
+
+bool get_l_distance(){
+  float distance;
+  float duration = l_ultrasonic();
+  if (duration != 0) distance =duration * 0.034 / 2;// 999;
+  Serial.println(distance);
+  if (distance>=12) return(false);
+  else return(true);
+}
+
+
+bool get_distance2(){
+  float distance;
+  float duration = f_ultrasonic();
+  if (duration != 0) distance =duration * 0.034 / 2;// 999;
+  Serial.println(distance);
+  if (distance>=11.2) return(false);
+  else return(true);
+}
+
 };

@@ -10,6 +10,7 @@
 #include "sensors.h"
 #include <LiquidCrystal_I2C.h>
 #include "basics.h"
+void task_2();  
 #include "task_1.h"
 
 
@@ -92,15 +93,36 @@ unsigned long readFrequency(bool fs2, bool fs3);
 
 // }
 // int black_space_count = 0;
-void task_2() {
-//   Serial.println("task2");
 
-  while (
-    analogRead(IR_L2) <= threshold ||
-    analogRead(IR_L1) <= threshold ||
-    analogRead(IR_M)  <= threshold ||
-    analogRead(IR_R1) <= threshold ||
-    analogRead(IR_R2) <= threshold
+void go_to_end(){
+    //speed=120;correction=0;ticker1.update();
+   // waitMillis(200);
+    while(analogRead(rotate_IR_R)>=threshold_2 && analogRead(rotate_IR_L)>=threshold_2){
+      basics.line_follow();
+      ticker1.update();
+      Serial.println(111);
+      Serial.println(analogRead(rotate_IR_L));
+      Serial.println(analogRead(rotate_IR_R));
+    }
+
+    while(analogRead(rotate_IR_R)<=threshold_2 || analogRead(rotate_IR_L)<=threshold_2 ){
+    basics.line_follow();
+      ticker1.update();
+      Serial.println(222222);
+    }
+  
+}
+
+
+void dash_follow(int d){
+ while (
+    !((analogRead(IR_L2) >= threshold &&
+    analogRead(IR_L1) >= threshold &&
+    analogRead(IR_M)  >= threshold &&
+    analogRead(IR_R1) >= threshold) ||
+    (analogRead(IR_L1) >= threshold &&
+    analogRead(IR_M)  >= threshold &&
+    analogRead(IR_R1) >= threshold && analogRead(IR_R2) >= threshold))
   ) {
     
     //black_space_count++;
@@ -110,7 +132,7 @@ void task_2() {
           int corre;
           if (analogRead(rotate_IR_L) <= threshold_2) corre =-1;
           else corre = 1;
-speed = -100;correction=0;ticker1.update();waitMillis(800);
+speed = -100;correction=0;ticker1.update();waitMillis(700);
       // STOP immediately
       speed = 0;
       correction = 0;
@@ -120,40 +142,7 @@ speed = -100;correction=0;ticker1.update();waitMillis(800);
       Serial.println("ROTATE IR TRIGGERED");
       waitMillis(500);   // pause 5 seconds
 
-      speed=0;correction=corre;ticker1.update();waitMillis(600);
-      // while(analogRead(IR_M)<=threshold){
-      //   speed=0;correction=corre;
-      //   ticker1.update();
-
-      // }
-    //    if (analogRead( IR_L1) >= threshold ||
-    //     analogRead(IR_R1) >= threshold) {
-    //       int corre;
-    //       if (analogRead(IR_L1) >= threshold) corre =-1;
-    //       else corre = 1;
-
-    //   // STOP immediately
-    //   speed = 0;
-    //   correction = 0;
-    //   //waitMillis(500);
-    //   ticker1.update();
-    //   waitMillis(500);
-
-    //   //Serial.println("ROTATE IR TRIGGERED");
-    //   //waitMillis(500);   // pause 5 seconds
-    //   while(analogRead(IR_M)<=threshold){
-    //     speed=0;correction=corre;
-    //     ticker1.update();
-
-    //   }
-
-    //   speed = 0;
-    //   correction = 0;
-    //   //waitMillis(500);
-    //   ticker1.update();
-
-    //  // Serial.println("ROTATE IR TRIGGERED");
-    //   waitMillis(500); }
+      speed=0;correction=corre;ticker1.update();waitMillis(d);
 
       speed = 0;
       correction = 0;
@@ -174,14 +163,6 @@ speed = -100;correction=0;ticker1.update();waitMillis(800);
       // after waiting, continue loop
       continue;
     }
-    // if (black_space_count == 4){
-    //   while (analogRead(rotate_IR_L) <= threshold_2 ||
-    //     analogRead(rotate_IR_R) <= threshold_2){
-
-    //       speed=
-
-    //     }
-    
 
     // otherwise follow line
   basics.line_follow();
@@ -189,8 +170,124 @@ speed = -100;correction=0;ticker1.update();waitMillis(800);
     ticker1.update();
   }
 
+//  correction=0;speed=0;ticker1.update();waitMillis(500);
+//   correction=1;speed=0;ticker1.update();waitMillis(200);
+//   correction=0;speed=0;ticker1.update();waitMillis(500);
+
+//   if(    analogRead(IR_L2) >= threshold ||
+//     analogRead(IR_L1) >= threshold ||
+//     analogRead(IR_M)  >= threshold ||
+//     analogRead(IR_R1) >= threshold ||
+//     analogRead(IR_R2) >= threshold){
+//       waitMillis(500);
+//     }
+//     else{
+//       correction=-1;speed=0;ticker1.update();waitMillis(600);
+//   correction=0;speed=0;ticker1.update();waitMillis(500);
+//     }
+}
+void task_2() {
+//   Serial.println("task2");
+
+basics.task_2_arm();
+dash_follow(800);
+
+ 
+
   speed = 0;
   correction = 0;
+  waitMillis(500);
+
+  go_to_end();
+  speed = 0;
+  correction = 0;
+  waitMillis(500);
+
+   
+
+  task_1.rotate_oneeighty();
+  speed = 0;
+  correction = 0;
+  waitMillis(500);
+
+  speed = -100;
+  correction = 0;
+  waitMillis(2000);
+speed = 0;
+  correction = 0;
+  waitMillis(500);
+
+speed=0;correction=-1;ticker1.update();waitMillis(100);
+speed = 0;
+  correction = 0;
+  waitMillis(500);
+
+
+  //task_1.go_back();
+  speed=100;correction=0;ticker1.update();waitMillis(2000);
+  speed = 0;
+  correction = 0;
+  waitMillis(500);
+
+  speed = 100;
+  correction = 0;
+  waitMillis(500);
+  speed = 0;
+  correction = 0;
+  waitMillis(500);
+
+  dash_follow(1000);
+  speed = 0;
+  correction = 0;
+  waitMillis(500);
+
+  go_to_end();
+  speed = 0;
+  correction = 0;
+  waitMillis(500);
+
+  speed=-100;correction=0;
+  waitMillis(3000);
+
+  speed = 0;
+  correction = 0;
+  waitMillis(500);
+
+  task_1.rotate_ninety(-1);
+  speed = 0;
+  correction = 0;
+  waitMillis(500);
+
+  speed=-100;correction=0,ticker1.update();waitMillis(1500);
+
+   speed = 0;
+  correction = 0;
+  waitMillis(500);
+
+  while (analogRead(rotate_IR_L)>=threshold_2 && analogRead(rotate_IR_R)>=threshold_2)
+  {
+    speed=-200;correction=0;ticker1.update();
+  }
+speed = 0;
+  correction = 0;
+  ticker1.update();
+  waitMillis(500);
+  while(analogRead(IR_M)>=0){
+    speed=0;correction=1;
+  }
+
+  speed=0;correction=0;ticker1.update();waitMillis(500);
+  while (analogRead(IR_L2) <= threshold ||
+    analogRead(IR_L1) <= threshold ||
+    analogRead(IR_M)  <= threshold ||
+    analogRead(IR_R1) <= threshold ||
+    analogRead(IR_R2) <= threshold)
+  {
+    basics.line_follow();
+  }
+  
+  
+
 }
 
 void task_21() {
@@ -409,7 +506,68 @@ void updateMenus() {
   lastMenu = currentMenu;
 }
 
+void task_3(){
+while ((analogRead(IR_L2) >= threshold ||
+    analogRead(IR_L1) >= threshold ||
+    analogRead(IR_M)  >= threshold ||
+    analogRead(IR_R1) >= threshold || analogRead(IR_R1) >= threshold)&&sensors.get_distance()) {
+      basics.line_follow();
+      ticker1.update();
+    }
 
+    speed=0;correction=0;ticker1.update(),waitMillis(500);
+    if(analogRead(IR_L2) >= threshold ||
+    analogRead(IR_L1) >= threshold ||
+    analogRead(IR_M)  >= threshold ||
+    analogRead(IR_R1) >= threshold || analogRead(IR_R1) >= threshold) {
+
+    }else{
+task_1.rotate_ninety(1);
+    while(sensors.get_l_distance()){
+      basics.wall_following();
+      ticker1.update();
+    }
+    speed=120;correction=0;ticker1.update();waitMillis(1000);
+    speed=0;correction=0;ticker1.update(),waitMillis(500);
+    task_1.rotate_ninety(-1);
+    speed=0;correction=0;ticker1.update(),waitMillis(500);
+    speed=120;correction=0;ticker1.update();waitMillis(1000);
+    speed=0;correction=0;ticker1.update(),waitMillis(500);
+
+    //pic ball
+speed=-120;correction=0;ticker1.update();waitMillis(1000);
+    speed=0;correction=0;ticker1.update(),waitMillis(500);
+    task_1.rotate_ninety(1);
+    speed=120;correction=0;ticker1.update();waitMillis(1000);
+    speed=0;correction=0;ticker1.update(),waitMillis(500);
+
+    while ((analogRead(IR_L2) <= threshold &&
+    analogRead(IR_L1) <= threshold &&
+    analogRead(IR_M)  <= threshold &&
+    analogRead(IR_R1) <= threshold && analogRead(IR_R1) <= threshold))
+    {
+      basics.wall_following();
+      ticker1.update();
+    }
+    task_1.rotate_ninety(1);
+    speed=0;correction=0;ticker1.update(),waitMillis(500);
+    
+    while(analogRead(IR_L2) <= threshold ||
+    analogRead(IR_L1) <= threshold ||
+    analogRead(IR_M)  <= threshold ||
+    analogRead(IR_R1) <= threshold || analogRead(IR_R1) <= threshold){
+      speed=120;correction=0;ticker1.update();
+
+    }
+    task_1.rotate_ninety(1);
+    speed=0;correction=0;ticker1.update(),waitMillis(500);
+
+    
+    }
+
+
+    
+    }
 
 
 void loop() {
@@ -417,9 +575,10 @@ void loop() {
     // Always update ticker
   ticker1.update();
   //updateMenus();
+ // task_1.task_1();
 
 task_2();
-
+//task_1.go_to_end();
     // Always run line follow
     //line_follow();
 
@@ -454,6 +613,6 @@ task_2();
     //sensors.color();
     //basics.wall_following();
 
-  // waitMillis(2000);
+  //waitMillis(20000);
    //moveSmooth(elbow,115 , 180, 10);
  }

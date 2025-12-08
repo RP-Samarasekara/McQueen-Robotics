@@ -181,4 +181,13 @@ void wall_following(){
   }
   //ticker1.update();
     };
+
+    void task_2_arm(){
+  moveSmooth(upper, 0, 100,10);
+  movebothSmooth(left_arm, right_arm, 0, 90, 90, 0, 10);
+
+  
+}
+
 };
+

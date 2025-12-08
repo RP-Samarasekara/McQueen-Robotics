@@ -117,3 +117,5 @@ int color_value = 0; //0- white, 1 = red, 2 = blue , 3 = green;
 
 //task1
 bool obstacal = false;
+
+int objects=0;

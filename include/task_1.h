@@ -44,6 +44,42 @@ class Task_1{
 
     }
 
+    void endd(int c){
+while(c<=8){
+  basics.line_follow();
+  ticker1.update();
+  
+}
+go_to_end();
+speed =0; correction=0;ticker1.update();
+  waitMillis(500);
+rotate_ninety(-1);
+speed =0; correction=0;ticker1.update();
+  waitMillis(500);
+go_to_end();
+speed =0; correction=0;ticker1.update();
+  waitMillis(500);
+rotate_ninety(1);
+speed =0; correction=0;ticker1.update();
+  waitMillis(500);
+go_to_end();
+speed =0; correction=0;ticker1.update();
+  waitMillis(500);
+rotate_ninety(1);
+speed =0; correction=0;ticker1.update();
+  waitMillis(500);
+  speed =100; correction=0;ticker1.update();
+  waitMillis(1000);
+  speed =0; correction=0;ticker1.update();
+  waitMillis(500);
+  task_2();
+
+
+
+
+
+    }
+
 void go_back(){
   if(analogRead(rotate_IR_L)>=threshold_2&& analogRead(rotate_IR_L)>=threshold_2){
     Serial.println(analogRead(rotate_IR_L));
@@ -64,7 +100,7 @@ void go_to_end(){
   }}
     //speed=120;correction=0;ticker1.update();
    // waitMillis(200);
-    while(analogRead(rotate_IR_R)>=threshold_2 || analogRead(rotate_IR_L)>=threshold_2){
+    while(analogRead(rotate_IR_R)>=threshold_2 && analogRead(rotate_IR_L)>=threshold_2){
       basics.line_follow();
       ticker1.update();
       Serial.println(111);
@@ -186,6 +222,10 @@ speed =0; correction=0;
 
 void drop_object( int colour,int r, int c) {
 
+  speed=-120;correction=0;ticker1.update();waitMillis(500);
+   speed =0; correction=0;
+  waitMillis(500);
+
   //int c1 = c; int r1=r;
 int pos=colour;
   int rotation = 0;
@@ -193,6 +233,7 @@ int pos=colour;
   if (r%2==0) rotation =1;
   else rotation =-1;
  // int row =1;
+ //if (c==9) rotation=-rotation;
 
   //while (row<=8){
    //column = c;
@@ -205,6 +246,7 @@ if (pos>=10){
 colour-=10;
 }else{
 go_to_end();
+go_to_end();
  speed=0;correction=0;
  waitMillis(500);
 
@@ -213,7 +255,7 @@ rotate_ninety(rotation);
  waitMillis(500);
 }
 
- go(r,r,8);
+ go(-r,r,8);
 
  go_to_end();
  speed=0;correction=0;
@@ -221,17 +263,18 @@ rotate_ninety(rotation);
 
 
  int end;
-
+int pp ;
  if (r%2==0){
   if (colour==1) end=3;
  else if (colour==2) end=7;
  else end =5;
+ pp=9-end;
  }
  else{
 if (colour==1) end=7;
  else if (colour==2) end=3;
  else end =5;
-
+pp=end;
  }
  
 
@@ -256,7 +299,7 @@ else { rotation2=1;turn=-1 ;}
  speed=0;correction=0;
  waitMillis(500);
 
- go(turn,1,abs(distance)-1);
+ go(-turn,1,abs(distance)-1);
 
  go_to_end();
 
@@ -271,12 +314,16 @@ else { rotation2=1;turn=-1 ;}
  //waitMillis(500);
 
  basics.boxdrop();
+
+ if (objects>=2){
+  endd(8-end);
+ }
  speed=0;correction=0;
  waitMillis(500);
  rotate_ninety(-rotation2);
  speed=0;correction=0;
  waitMillis(500);
- go(-turn,1,abs(distance)-1);
+ go(turn,1,abs(distance)-1);
  speed=0;correction=0;
  waitMillis(500);
  go_to_end();
@@ -286,7 +333,7 @@ else { rotation2=1;turn=-1 ;}
  speed=0;correction=0;
  waitMillis(500);
 
- go(-r,1,9-r);
+ go(r,1,9-r);
 
  speed=0;correction=0;
  waitMillis(500);
@@ -330,15 +377,15 @@ int object(int r, int c,int pos){
   if (duration != 0) distance =duration * 0.034 / 2;// 999;
   Serial.println(distance);
   //else distance = duration * 0.034 / 2;
-  if (distance<=11.2){
+  if (distance<=11.6){
     
     correction = 0;
     speed = 0;
     
     int rot;
 
-    if (r%2==0) rot = -1;
-    else rot =1;
+    if (r%2==0) rot = 1;
+    else rot =-1;
 if (obstacal){
       avoid_obstacal(rot);
       return(2);
@@ -354,6 +401,7 @@ if (obstacal){
 
     }
     else{
+      objects++;
       pick_object();
       obstacal=true;
       drop_object(colour+pos,r,c+1);
@@ -395,5 +443,12 @@ row++;
 Serial.println(row);
 }
 }
+
+
+
+
+
+
+
 
 };
