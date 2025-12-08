@@ -217,5 +217,13 @@ bool get_distance2(){
   if (distance>=11.2) return(false);
   else return(true);
 }
+bool get_distance3(){
+  float distance;
+  float duration = f_ultrasonic();
+  if (duration != 0) distance =duration * 0.034 / 2;// 999;
+  Serial.println(distance);
+  if (distance>=4) return(false);
+  else return(true);
+}
 
 };

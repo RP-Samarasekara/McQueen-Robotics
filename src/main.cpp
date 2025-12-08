@@ -186,11 +186,74 @@ speed = -100;correction=0;ticker1.update();waitMillis(700);
 //   correction=0;speed=0;ticker1.update();waitMillis(500);
 //     }
 }
+
+
+void dash_follow2(int d){
+ while (!sensors.get_distance())  {
+    
+    //black_space_count++;
+    // ROTATE IR FIRST — highest priority
+    if (analogRead(rotate_IR_L) <= threshold_2 ||
+        analogRead(rotate_IR_R) <= threshold_2) {
+          int corre;
+          if (analogRead(rotate_IR_L) <= threshold_2) corre =-1;
+          else corre = 1;
+speed = -100;correction=0;ticker1.update();waitMillis(700);
+      // STOP immediately
+      speed = 0;
+      correction = 0;
+      //waitMillis(500);
+      ticker1.update();
+
+      Serial.println("ROTATE IR TRIGGERED");
+      waitMillis(500);   // pause 5 seconds
+
+      speed=0;correction=corre;ticker1.update();waitMillis(d);
+
+      speed = 0;
+      correction = 0;
+      //waitMillis(500);
+      ticker1.update();
+
+     // Serial.println("ROTATE IR TRIGGERED");
+      waitMillis(500);   // pause 5 seconds
+      while(analogRead(IR_L2) >= threshold ||
+    analogRead(IR_L1) >= threshold ||
+    analogRead(IR_M)  >= threshold ||
+    analogRead(IR_R1) >= threshold ||
+    analogRead(IR_R2) >= threshold){
+      basics.line_follow();
+      ticker1.update();
+    }
+
+      // after waiting, continue loop
+      continue;
+    }
+
+    // otherwise follow line
+  basics.line_follow();
+   //speed=100;correction=0;
+    ticker1.update();
+  }
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
 void task_2() {
 //   Serial.println("task2");
 
 basics.task_2_arm();
-dash_follow(800);
+dash_follow2(800);
 
  
 
@@ -212,61 +275,92 @@ dash_follow(800);
 
   speed = -100;
   correction = 0;
-  waitMillis(2000);
+  waitMillis(4000);
 speed = 0;
   correction = 0;
   waitMillis(500);
 
-speed=0;correction=-1;ticker1.update();waitMillis(100);
-speed = 0;
-  correction = 0;
-  waitMillis(500);
+// speed=0;correction=-1;ticker1.update();waitMillis(100);
+// speed = 0;
+//   correction = 0;
+//   waitMillis(500);
 
 
-  //task_1.go_back();
-  speed=100;correction=0;ticker1.update();waitMillis(2000);
-  speed = 0;
-  correction = 0;
-  waitMillis(500);
+//   //task_1.go_back();
+//   speed=100;correction=0;ticker1.update();waitMillis(2000);
+//   speed = 0;
+//   correction = 0;
+//   waitMillis(500);
 
-  speed = 100;
-  correction = 0;
-  waitMillis(500);
-  speed = 0;
-  correction = 0;
-  waitMillis(500);
+//   speed = 100;
+//   correction = 0;
+//   waitMillis(500);
+//   speed = 0;
+//   correction = 0;
+//   waitMillis(500);
 
-  dash_follow(1000);
-  speed = 0;
-  correction = 0;
-  waitMillis(500);
+//   dash_follow(1100);
+//   speed = 0;
+//   correction = 0;
+//   waitMillis(500);
 
-  go_to_end();
-  speed = 0;
-  correction = 0;
-  waitMillis(500);
+//   go_to_end();
+//   speed = 0;
+//   correction = 0;
+//   waitMillis(500);
 
-  speed=-100;correction=0;
-  waitMillis(3000);
+//   speed=-100;correction=0;
+//   waitMillis(3000);
 
-  speed = 0;
-  correction = 0;
-  waitMillis(500);
+//   speed = 0;
+//   correction = 0;
+//   waitMillis(500);
 
-  task_1.rotate_ninety(-1);
-  speed = 0;
-  correction = 0;
-  waitMillis(500);
+//   task_1.rotate_ninety(-1);
+//   speed = 0;
+//   correction = 0;
+//   waitMillis(500);
 
-  speed=-100;correction=0,ticker1.update();waitMillis(1500);
+//   speed=-100;correction=0,ticker1.update();waitMillis(2000);
 
+//    speed = 0;
+//   correction = 0;
+//   waitMillis(500);
+speed=100;correction=0,ticker1.update();waitMillis(1000);
    speed = 0;
   correction = 0;
-  waitMillis(500);
+   waitMillis(500);
+
+
+task_1.rotate_ninety(1);
+speed = 0;
+  correction = 0;
+   waitMillis(500);
+   speed=100;correction=0,ticker1.update();waitMillis(4500);
+   speed = 0;
+  correction = 0;
+   waitMillis(500);
+
+   task_1.rotate_ninety(1);
+   speed = 0;
+  correction = 0;
+   waitMillis(500);
+
+   speed=100;correction=0,ticker1.update();waitMillis(3000);
+   speed = 0;
+  correction = 0;
+   waitMillis(500);
+
+   task_1.rotate_ninety(-1);
+   speed = 0;
+  correction = 0;
+
+   basics.ramp_arm();
+   waitMillis(500);
 
   while (analogRead(rotate_IR_L)>=threshold_2 && analogRead(rotate_IR_R)>=threshold_2)
   {
-    speed=-200;correction=0;ticker1.update();
+    speed=-300;correction=0;ticker1.update();
   }
 speed = 0;
   correction = 0;
@@ -507,26 +601,28 @@ void updateMenus() {
 }
 
 void task_3(){
-while ((analogRead(IR_L2) >= threshold ||
+while (/*(analogRead(IR_L2) >= threshold ||
     analogRead(IR_L1) >= threshold ||
     analogRead(IR_M)  >= threshold ||
-    analogRead(IR_R1) >= threshold || analogRead(IR_R1) >= threshold)&&sensors.get_distance()) {
+    analogRead(IR_R1) >= threshold || analogRead(IR_R1) >= threshold)&&!*/!sensors.get_distance3()) {
       basics.line_follow();
       ticker1.update();
     }
 
     speed=0;correction=0;ticker1.update(),waitMillis(500);
-    if(analogRead(IR_L2) >= threshold ||
-    analogRead(IR_L1) >= threshold ||
-    analogRead(IR_M)  >= threshold ||
-    analogRead(IR_R1) >= threshold || analogRead(IR_R1) >= threshold) {
+    // if(analogRead(IR_L2) >= threshold ||
+    // analogRead(IR_L1) >= threshold ||
+    // analogRead(IR_M)  >= threshold ||
+    // analogRead(IR_R1) >= threshold || analogRead(IR_R1) >= threshold) {
 
-    }else{
+    // }else{
 task_1.rotate_ninety(1);
-    while(sensors.get_l_distance()){
+speed=0;correction=0;waitMillis(500);
+if(!sensors.get_l_distance()){
+    while(!sensors.get_l_distance()){
       basics.wall_following();
       ticker1.update();
-    }
+    }}
     speed=120;correction=0;ticker1.update();waitMillis(1000);
     speed=0;correction=0;ticker1.update(),waitMillis(500);
     task_1.rotate_ninety(-1);
@@ -567,7 +663,7 @@ speed=-120;correction=0;ticker1.update();waitMillis(1000);
 
 
     
-    }
+   // }
 
 
 void loop() {
@@ -575,9 +671,9 @@ void loop() {
     // Always update ticker
   ticker1.update();
   //updateMenus();
- // task_1.task_1();
-
-task_2();
+ //task_1.task_1();
+task_3();
+//task_2();
 //task_1.go_to_end();
     // Always run line follow
     //line_follow();

@@ -45,18 +45,24 @@ class Task_1{
     }
 
     void endd(int c){
-while(c<=8){
-  basics.line_follow();
-  ticker1.update();
+      rotate_ninety(1);
+      speed =0; correction=0;ticker1.update();
+  waitMillis(500);
+
+go(2,c,8);
   
-}
+
 go_to_end();
+go_to_end();
+
+
 speed =0; correction=0;ticker1.update();
   waitMillis(500);
 rotate_ninety(-1);
 speed =0; correction=0;ticker1.update();
   waitMillis(500);
 go_to_end();
+go_to_end();
 speed =0; correction=0;ticker1.update();
   waitMillis(500);
 rotate_ninety(1);
@@ -65,7 +71,7 @@ speed =0; correction=0;ticker1.update();
 go_to_end();
 speed =0; correction=0;ticker1.update();
   waitMillis(500);
-rotate_ninety(1);
+rotate_ninety(-1);
 speed =0; correction=0;ticker1.update();
   waitMillis(500);
   speed =100; correction=0;ticker1.update();
