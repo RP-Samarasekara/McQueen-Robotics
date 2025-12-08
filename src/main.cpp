@@ -11,6 +11,7 @@
 #include <LiquidCrystal_I2C.h>
 #include "basics.h"
 void task_2();  
+void detectAndDisplay();
 #include "task_1.h"
 
 
@@ -28,9 +29,26 @@ int indivIndex = 0;
 unsigned long lastJoy = 0;
 int joyDelay = 200;
 
-String mainMenuItems[2] = {"Tasks", "Individual"};
-String taskMenuItems[7] = {"Task 1","Task 2","Task 3","Task 4","Task 5","Task 6","Task 7"};
-String indivMenuItems[5] = {"Ballpickup", "Boxpickup", "Boxdrop", "Line following", "Wall following"};
+const char* mainMenuItems[2] = {"Tasks", "Individual"};
+
+const char* taskMenuItems[6] = {
+  "Task 1",
+  "Task 2",
+  "Task 3",
+  "Task 4",
+  "Task 5",
+  "Task 6"
+};
+
+const char* indivMenuItems[6] = {
+  "Line follow",
+  "Wall follow",
+  "Ball pickup",
+  "Box pickup",
+  "Box drop",
+  "Detect()"
+};
+
 
 int lastMainIndex = -1;
 int lastTaskIndex = -1;
@@ -69,30 +87,6 @@ void waitMillis(unsigned long interval) {
 
 unsigned long readFrequency(bool fs2, bool fs3);
 //char getDominantColor();
-
-// void task_2(){
-//   Serial.println("task2");
-//   while(analogRead(IR_L2)<=threshold|| analogRead(IR_L1)<=threshold||analogRead(IR_M)<=threshold||analogRead(IR_R1)<=threshold||analogRead(IR_R2)<=threshold){
-    
-//     //if (analogRead(IR_L2<threshold)|| analogRead(IR_L1<threshold)||analogRead(IR_M<threshold)||analogRead(IR_R1<threshold)||analogRead(IR_R2<threshold)){
-// basics.line_follow();
-//     ticker1.update();
-//     //}
-    
-//    if (analogRead(rotate_IR_L)<=threshold_2 || analogRead(rotate_IR_R)<=threshold_2){
-//     speed =0; correction=0;
-//     waitMillis(5000);
-// Serial.println(22222222);
-//    }
-
-
-    
-//   }
- 
-//   speed = 0;correction=0;
-
-// }
-// int black_space_count = 0;
 
 void go_to_end(){
     //speed=120;correction=0;ticker1.update();
@@ -239,16 +233,6 @@ speed = -100;correction=0;ticker1.update();waitMillis(700);
 
 }
 
-
-
-
-
-
-
-
-
-
-
 void task_2() {
 //   Serial.println("task2");
 
@@ -279,53 +263,6 @@ dash_follow2(800);
 speed = 0;
   correction = 0;
   waitMillis(500);
-
-// speed=0;correction=-1;ticker1.update();waitMillis(100);
-// speed = 0;
-//   correction = 0;
-//   waitMillis(500);
-
-
-//   //task_1.go_back();
-//   speed=100;correction=0;ticker1.update();waitMillis(2000);
-//   speed = 0;
-//   correction = 0;
-//   waitMillis(500);
-
-//   speed = 100;
-//   correction = 0;
-//   waitMillis(500);
-//   speed = 0;
-//   correction = 0;
-//   waitMillis(500);
-
-//   dash_follow(1100);
-//   speed = 0;
-//   correction = 0;
-//   waitMillis(500);
-
-//   go_to_end();
-//   speed = 0;
-//   correction = 0;
-//   waitMillis(500);
-
-//   speed=-100;correction=0;
-//   waitMillis(3000);
-
-//   speed = 0;
-//   correction = 0;
-//   waitMillis(500);
-
-//   task_1.rotate_ninety(-1);
-//   speed = 0;
-//   correction = 0;
-//   waitMillis(500);
-
-//   speed=-100;correction=0,ticker1.update();waitMillis(2000);
-
-//    speed = 0;
-//   correction = 0;
-//   waitMillis(500);
 speed=100;correction=0,ticker1.update();waitMillis(1000);
    speed = 0;
   correction = 0;
@@ -384,78 +321,6 @@ speed = 0;
 
 }
 
-void task_21() {
-  Serial.println("task2");
-
-  unsigned long lineLostTime = 0;
-  bool linePresent = true;
-
-  while (true) {
-
-    bool L2 = analogRead(IR_L2) >= threshold;
-    bool L1 = analogRead(IR_L1) >= threshold;
-    bool M  = analogRead(IR_M)  >= threshold;
-    bool R1 = analogRead(IR_R1) >= threshold;
-    bool R2 = analogRead(IR_R2) >= threshold;
-
-    // if ANY sensor sees line, line is present
-    if (L2 || L1 || M || R1 || R2) {
-      linePresent = true;
-      lineLostTime = millis();   // reset timer
-    } 
-    else {
-      linePresent = false;
-    }
-
-    // if line missing for 80ms → exit loop
-    if (!linePresent && (millis() - lineLostTime > 1000)) break;
-
-    // follow line
-    basics.line_follow();
-    ticker1.update();
-
-
-    // -------------------------------------------
-    // ROTATE IR detection
-    // -------------------------------------------
-    if (analogRead(rotate_IR_L) <= threshold_2 ||
-        analogRead(rotate_IR_R) <= threshold_2) {
-
-      Serial.println(analogRead(rotate_IR_L));
-      Serial.println(analogRead(rotate_IR_R));
-
-      int corre = 0;
-
-      if (analogRead(rotate_IR_L) <= threshold_2)
-        corre = 1;     // rotate right
-      else 
-        corre = -1;    // rotate left
-
-      speed = 0; correction = 0;
-      waitMillis(300);
-
-      speed = 0; correction = -corre;
-      waitMillis(900);
-
-      speed = 0; correction = 0;
-      waitMillis(300);
-
-      speed = -100; correction = 0;
-      waitMillis(400);
-
-      speed = 0; correction = 0;
-      waitMillis(300);
-    }
-
-  } // end while
-
-  speed = 0;
-  correction = 0;
-}
-
-
-
-
 void setup() {
   motors.begin();
   encoders.begin();
@@ -489,153 +354,77 @@ lcd.print("  Task 2");
   
 }
 
-
-void drawMenuOptimized(String items[], int size, int index) {
+void drawMenuOptimized(const char* items[], int size, int index) {
   lcd.clear();
 
-  // Print current item
+  // current cursor
   lcd.setCursor(0, 0);
   lcd.print("> ");
   lcd.print(items[index]);
 
-  // Print next item only if it exists
+  // next cursor
   lcd.setCursor(0, 1);
   if (index + 1 < size) {
     lcd.print("  ");
     lcd.print(items[index + 1]);
   } else {
-    lcd.print("  "); // clear second line
+    lcd.print("  ");
   }
 }
 
 void handleJoystick(int &index, int size) {
-  int y = analogRead(A8); // horizontal
-  int x = analogRead(A9); // vertical
+  int x = analogRead(A9);  // vertical movement
 
   if (millis() - lastJoy < joyDelay) return;
 
-  // Navigate menu vertically (swapped axes)
-  if (x < 300 && index > 0) { // joystick left → up
+  if (x < 300 && index > 0) {  // UP
     index--;
     lastJoy = millis();
   }
-  if (x > 700 && index < size - 1) { // joystick right → down
+  if (x > 700 && index < size - 1) { // DOWN
     index++;
     lastJoy = millis();
   }
 }
+
 
 bool isSelectPressed() {
   return digitalRead(14) == LOW;
 }
 
 
-void updateMenus() {
 
-  switch (currentMenu) {
-
-    // ---------------- MAIN MENU ----------------
-    case MAIN_MENU:
-      handleJoystick(mainIndex, 2);
-
-      if (mainIndex != lastMainIndex || currentMenu != lastMenu) {
-        drawMenuOptimized(mainMenuItems, 2, mainIndex);
-        lastMainIndex = mainIndex;
-      }
-
-      if (isSelectPressed()) {
-        currentMenu = (mainIndex == 0) ? TASK_MENU : INDIVIDUAL_MENU;
-        waitMillis(100);
-      }
-      break;
-
-    // ---------------- TASK MENU ----------------
-    case TASK_MENU:
-      handleJoystick(taskIndex, 7);
-
-      if (taskIndex != lastTaskIndex || currentMenu != lastMenu) {
-        drawMenuOptimized(taskMenuItems, 7, taskIndex);
-        lastTaskIndex = taskIndex;
-      }
-
-      if (isSelectPressed()) {
-        if (taskIndex == 0) task_1.task_1();
-        // add other tasks if needed
-        waitMillis(100);
-      }
-
-      // GO BACK when joystick pushed left at first item
-      if (analogRead(A9) < 100) { // left side
-        currentMenu = MAIN_MENU;
-        waitMillis(100);
-      }
-      break;
-
-    // ---------------- INDIVIDUAL MENU ----------------
-    case INDIVIDUAL_MENU:
-      handleJoystick(indivIndex, 5);
-
-      if (indivIndex != lastIndivIndex || currentMenu != lastMenu) {
-        drawMenuOptimized(indivMenuItems, 5, indivIndex);
-        lastIndivIndex = indivIndex;
-      }
-
-      if (isSelectPressed()) {
-        if (indivIndex == 0) basics.ballpickup();
-        if (indivIndex == 1) basics.boxpickup();
-        if (indivIndex == 2) basics.boxdrop();
-        if (indivIndex == 3) basics.line_follow();
-        if (indivIndex == 4) basics.wall_following();
-        waitMillis(100);
-      }
-
-      // GO BACK when joystick pushed left at first item
-      if (analogRead(A9) < 100) { // left side
-        currentMenu = MAIN_MENU;
-        waitMillis(100);
-      }
-      break;
-  }
-
-  lastMenu = currentMenu;
-}
 
 void task_3(){
-while (/*(analogRead(IR_L2) >= threshold ||
-    analogRead(IR_L1) >= threshold ||
-    analogRead(IR_M)  >= threshold ||
-    analogRead(IR_R1) >= threshold || analogRead(IR_R1) >= threshold)&&!*/!sensors.get_distance3()) {
+while (!sensors.get_distance3()) {
       basics.line_follow();
       ticker1.update();
     }
 
     speed=0;correction=0;ticker1.update(),waitMillis(500);
-    // if(analogRead(IR_L2) >= threshold ||
-    // analogRead(IR_L1) >= threshold ||
-    // analogRead(IR_M)  >= threshold ||
-    // analogRead(IR_R1) >= threshold || analogRead(IR_R1) >= threshold) {
-
-    // }else{
+    
 task_1.rotate_ninety(1);
 speed=0;correction=0;waitMillis(500);
-if(!sensors.get_l_distance()){
-    while(!sensors.get_l_distance()){
-      basics.wall_following();
-      ticker1.update();
-    }}
-    speed=120;correction=0;ticker1.update();waitMillis(1000);
-    speed=0;correction=0;ticker1.update(),waitMillis(500);
-    task_1.rotate_ninety(-1);
-    speed=0;correction=0;ticker1.update(),waitMillis(500);
-    speed=120;correction=0;ticker1.update();waitMillis(1000);
-    speed=0;correction=0;ticker1.update(),waitMillis(500);
+speed=100;correction=0;waitMillis(300);
+speed=0;correction=0;waitMillis(500);
+//if(sensors.get_l_distance()){
+//     while(speed!=0||correction!=0){
+//       basics.wall_following2();
+//       ticker1.update();
+//     }//}
+//     speed=120;correction=0;ticker1.update();waitMillis(1000);
+//     speed=0;correction=0;ticker1.update(),waitMillis(500);
+//     task_1.rotate_ninety(-1);
+//     speed=0;correction=0;ticker1.update(),waitMillis(500);
+//     speed=120;correction=0;ticker1.update();waitMillis(1000);
+//     speed=0;correction=0;ticker1.update(),waitMillis(500);
 
-    //pic ball
-speed=-120;correction=0;ticker1.update();waitMillis(1000);
-    speed=0;correction=0;ticker1.update(),waitMillis(500);
-    task_1.rotate_ninety(1);
-    speed=120;correction=0;ticker1.update();waitMillis(1000);
-    speed=0;correction=0;ticker1.update(),waitMillis(500);
+//     //pic ball
+// speed=-120;correction=0;ticker1.update();waitMillis(1000);
+//     speed=0;correction=0;ticker1.update(),waitMillis(500);
+//     task_1.rotate_ninety(1);
+//     speed=120;correction=0;ticker1.update();waitMillis(1000);
+//     speed=0;correction=0;ticker1.update(),waitMillis(500);
 
     while ((analogRead(IR_L2) <= threshold &&
     analogRead(IR_L1) <= threshold &&
@@ -660,55 +449,309 @@ speed=-120;correction=0;ticker1.update();waitMillis(1000);
 
     
     }
+void task_4(){
+  Serial.println(2);
+}
+int black_space_count = 0;
+bool in_black_space = false;
+
+void rotate_angle(int d, int angle){
+  float ini_angle = encoders.robotAngle();
+
+  while (abs(encoders.robotAngle()-ini_angle) <=angle){
+     correction = d;
+    ticker1.update();
+  }
+  correction = 0;
+  waitMillis(500);
+}
+void task_5() {
 
 
+  while (
+    analogRead(IR_L2) <= threshold ||
+    analogRead(IR_L1) <= threshold ||
+    analogRead(IR_M)  <= threshold ||
+    analogRead(IR_R1) <= threshold ||
+    analogRead(IR_R2) <= threshold
+  ) {
+     bool on_black = (
+    analogRead(IR_L2) <= threshold &&
+    analogRead(IR_L1) <= threshold &&
+    analogRead(IR_M)  <= threshold &&
+    analogRead(IR_R1) <= threshold &&
+    analogRead(IR_R2) <= threshold
+);
+
+// EDGE DETECTION
+
+
+  if (!on_black) {
+    in_black_space = false; // reset when leaving black
+}
+    if (on_black && !in_black_space) {
+    black_space_count++;
+    in_black_space = true;
+
+    Serial.print("Black space count = ");
+    Serial.println(black_space_count);
+
+    if (black_space_count == 2) {
+      waitMillis(800);
     
-   // }
+     rotate_angle(1, 100);   // or -1
+    }
 
+    else if (black_space_count == 4) {
+      
+      while (analogRead(rotate_IR_L) <= threshold_2) {
+          speed = 100;
+          correction = 0;
+          ticker1.update();
+        
+    }
+    
+    waitMillis(800);
+    rotate_angle(-1,120);}
+
+    else if (black_space_count == 7) {
+
+      while (analogRead(rotate_IR_L) <= threshold_2) {
+          speed = 100;
+          correction = 0;
+          ticker1.update();
+        
+    }
+    waitMillis(800);
+    rotate_angle(1,60);
+        // or 1
+    }
+    else if (black_space_count == 8) {
+
+      while (analogRead(rotate_IR_L) <= threshold_2) {
+          speed = 100;
+          correction = 0;
+          ticker1.update();
+        
+    }
+    waitMillis(800);
+    rotate_angle(1,80);}
+    else if (black_space_count == 11){
+      waitMillis(2000);
+      speed=0;
+      correction=0;
+
+    }
+}
+    /*
+    // ROTATE IR FIRST — highest priority
+
+    if (black_space_count ==2){
+
+      task_1.rotate_ninety(1);
+
+    }
+    else if (black_space_count ==4){
+
+      task_1.rotate_ninety(-1);
+
+    }*/
+    if (analogRead(rotate_IR_L) <= threshold_2  ||
+        analogRead(rotate_IR_R) <= threshold_2) {
+          int corre;
+          if (analogRead(rotate_IR_L) <= threshold_2) corre =-1;
+          else corre = 1;
+          speed = -100;correction=0;ticker1.update();waitMillis(800);
+      // STOP immediately
+      speed = 0;
+      correction = 0;
+      //waitMillis(500);
+      ticker1.update();
+
+      Serial.println("ROTATE IR TRIGGERED");
+      waitMillis(500);   // pause 5 seconds
+
+      speed=0;correction=corre;ticker1.update();waitMillis(600);
+      // while(analogRead(IR_M)<=threshold){
+      //   speed=0;correction=corre;
+      //   ticker1.update();
+
+      // }
+    //    if (analogRead( IR_L1) >= threshold 
+    //     analogRead(IR_R1) >= threshold) {
+    //       int corre;
+    //       if (analogRead(IR_L1) >= threshold) corre =-1;
+    //       else corre = 1;
+
+    //   // STOP immediately
+    //   speed = 0;
+    //   correction = 0;
+    //   //waitMillis(500);
+    //   ticker1.update();
+    //   waitMillis(500);
+
+    //   //Serial.println("ROTATE IR TRIGGERED");
+    //   //waitMillis(500);   // pause 5 seconds
+    //   while(analogRead(IR_M)<=threshold){
+    //     speed=0;correction=corre;
+    //     ticker1.update();
+
+    //   }
+
+    //   speed = 0;
+    //   correction = 0;
+    //   //waitMillis(500);
+    //   ticker1.update();
+
+    //  // Serial.println("ROTATE IR TRIGGERED");
+    //   waitMillis(500); }
+
+      ///speed = 0;
+      //correction = 0;
+      //waitMillis(500);
+      ticker1.update();
+
+     // Serial.println("ROTATE IR TRIGGERED");
+      waitMillis(500);   // pause 5 seconds
+      while((analogRead(IR_L2) >= threshold ||
+    analogRead(IR_L1) >= threshold ||
+    analogRead(IR_M)  >= threshold ||
+    analogRead(IR_R1) >= threshold ||
+    analogRead(IR_R2) >= threshold) && black_space_count!=4){
+      basics.line_follow();
+      ticker1.update();}
+// after waiting, continue loop
+      continue;
+    }
+    // if (black_space_count == 4){
+    //   while (analogRead(rotate_IR_L) <= threshold_2 ||
+    //     analogRead(rotate_IR_R) <= threshold_2){
+
+    //       speed=
+
+    //     }
+    
+
+    // otherwise follow line
+    basics.line_follow();
+   //speed=100;correction=0;
+    ticker1.update();
+  }
+
+  //speed = 0;
+  //correction = 0;
+}
+void task_6(){
+  Serial.print("Hidden)");
+
+}
+void detectAndDisplay() {
+  //int result = task_1.detect();  // call your original detect()
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Detected:");
+
+  lcd.setCursor(0, 1);
+
+  switch (color_value) {
+    case 1: lcd.print("RED"); break;
+    case 2: lcd.print("BLUE"); break;
+    case 3: lcd.print("GREEN"); break;
+    default: lcd.print("OBSTACLE"); break;
+  }
+
+  waitMillis(4000);   
+  lcd.clear();
+
+
+}
+
+void updateMenus() {
+
+  switch (currentMenu) {
+
+    // -------- MAIN MENU --------
+    case MAIN_MENU:
+      handleJoystick(mainIndex, 2);
+
+      if (mainIndex != lastMainIndex || currentMenu != lastMenu) {
+        drawMenuOptimized(mainMenuItems, 2, mainIndex);
+        lastMainIndex = mainIndex;
+      }
+
+      if (isSelectPressed()) {
+        currentMenu = (mainIndex == 0) ? TASK_MENU : INDIVIDUAL_MENU;
+        waitMillis(150);
+      }
+      break;
+
+
+
+    // -------- TASK MENU --------
+    case TASK_MENU:
+      handleJoystick(taskIndex, 6);
+
+      if (taskIndex != lastTaskIndex || currentMenu != lastMenu) {
+        drawMenuOptimized(taskMenuItems, 6, taskIndex);
+        lastTaskIndex = taskIndex;
+      }
+
+      if (isSelectPressed()) {
+        if (taskIndex == 0) task_1.task_1();
+        if (taskIndex == 1) task_2();
+        if (taskIndex == 2) task_3();
+        if (taskIndex == 3) task_4();
+        if (taskIndex == 4) task_5();
+        if (taskIndex == 5) task_6();
+
+        waitMillis(150);
+      }
+
+      // Back to main menu
+      if (analogRead(A9) < 100 && taskIndex == 0) {
+        currentMenu = MAIN_MENU;
+        waitMillis(150);
+      }
+      break;
+
+
+
+    // -------- INDIVIDUAL MENU --------
+    case INDIVIDUAL_MENU:
+      handleJoystick(indivIndex, 6);
+
+      if (indivIndex != lastIndivIndex || currentMenu != lastMenu) {
+        drawMenuOptimized(indivMenuItems, 6, indivIndex);
+        lastIndivIndex = indivIndex;
+      }
+
+      if (isSelectPressed()) {
+        if (indivIndex == 0) basics.line_follow();
+        if (indivIndex == 1) basics.wall_following();
+        if (indivIndex == 2) basics.ballpickup();
+        if (indivIndex == 3) basics.boxpickup();
+        if (indivIndex == 4) basics.boxdrop();
+        if (indivIndex == 5) task_1.detect();
+
+        waitMillis(150);
+      }
+
+      // Back to main menu
+      if (analogRead(A9) < 100 && indivIndex == 0) {
+        currentMenu = MAIN_MENU;
+        waitMillis(150);
+      }
+      break;
+  }
+
+  lastMenu = currentMenu;
+}
 
 void loop() {
-
-    // Always update ticker
   ticker1.update();
-  //updateMenus();
+  updateMenus();
  //task_1.task_1();
-task_3();
+//task_3();
 //task_2();
-//task_1.go_to_end();
-    // Always run line follow
-    //line_follow();
-
-    //boxpickup();
-    //drop_object(7,5);
-//task_1.task_1();
-   //go_back();
-  //Serial.println(analogRead(rotate_IR_L));
-    //basics.wall_following();
-  //sensors.color();
-  //delay(500);
-  //ballpickup();
- // object();
-  //feedforwardPWM(1);
-  //feedforwardPWM(2);
-  //Serial.println(encoders.leftRPS());
-  //Serial.println(encoders.leftRPS());
-
-
-    // -------- BLOCKING SERVO ARM CONTROL ------------
-    //  left_arm.write(90);
-    //  waitMillis(1500);
-   // left_arm.write(0);
-    //right_arm.write(90);
-    //  waitMillis(1500);
-    //Serial.println(analogRead(rotate_IR_R));
-   // Serial.println(analogRead(IR_R1));
-   //moveSmooth(elbow,180 , 115, 10);
-    //ft_arm.write(0);
-    //ght_arm.write(90);
-    //waitMillis(2000);
-    //sensors.color();
-    //basics.wall_following();
-
-  //waitMillis(20000);
-   //moveSmooth(elbow,115 , 180, 10);
  }

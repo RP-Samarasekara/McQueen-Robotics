@@ -29,10 +29,10 @@ class Basics {
         base.attach(30);
 
         elbow.write(180);
-  upper.write(75);
-  base.write(3);
+       upper.write(75);
+       base.write(3);
     left_arm.write(0);  
-  right_arm.write(90);
+     right_arm.write(90);
 
     }
 
@@ -195,6 +195,36 @@ void ramp_arm(){
   moveSmooth(elbow,180, 120,10);
   waitMillis(800);
 
+  
+}
+
+void wall_following2(){
+  Serial.print("d");
+  //uint16_t dist = sensor.readRangeSingleMillimeters();
+
+  long duration = sensors.l_ultrasonic();
+  //Serial.print(duration);
+  
+  if (duration != 0) distance =duration * 0.034 / 2;// 999;
+  //else distance = duration * 0.034 / 2;
+  Serial.print(distance);
+  if (duration>=15){
+speed=0;correction=0;
+  }else{
+float error = distance - 5;
+  Serial.println(duration);
+  if (abs(error)>=2) {
+    error =constrain(error,-2,2);
+    speed = 0;
+    correction =- error/1.2;
+  }else{
+    speed =100;
+    correction=0;
+  }
+  //ticker1.update();
+    };
+
+  
   
 }
 };

@@ -6,6 +6,7 @@
 #include <Ticker.h>
 
 
+
 extern Ticker ticker1;
 
 void waitMillis(unsigned long ms);
@@ -18,6 +19,7 @@ class Task_1{
     private:
 
     public:
+
     void go(int row,int start,int stop){
         int i = start;
 
@@ -43,8 +45,7 @@ class Task_1{
  }
 
     }
-
-    void endd(int c){
+void endd(int c){
       rotate_ninety(1);
       speed =0; correction=0;ticker1.update();
   waitMillis(500);
@@ -79,11 +80,6 @@ speed =0; correction=0;ticker1.update();
   speed =0; correction=0;ticker1.update();
   waitMillis(500);
   task_2();
-
-
-
-
-
     }
 
 void go_back(){
@@ -366,7 +362,7 @@ int detect(){
   
   waitMillis(2000);
   sensors.color();
-
+  detectAndDisplay();
   return color_value;
   //waitMillis(40000);
 
@@ -425,6 +421,8 @@ if (obstacal){
 
 
 void task_1(){
+
+  Serial.println("task eka yano");
   go_back();
   speed=0;correction=0;
   waitMillis(500);
@@ -449,12 +447,5 @@ row++;
 Serial.println(row);
 }
 }
-
-
-
-
-
-
-
 
 };

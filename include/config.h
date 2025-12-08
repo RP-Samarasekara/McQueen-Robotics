@@ -73,7 +73,7 @@ const int Kd = 10;
 float irCorrection = 0;
 
 
-float speed = 100;
+float speed = 0;
 float correction = 0;
 
 // wall following

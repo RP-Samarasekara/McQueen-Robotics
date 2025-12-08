@@ -222,7 +222,7 @@ bool get_distance3(){
   float duration = f_ultrasonic();
   if (duration != 0) distance =duration * 0.034 / 2;// 999;
   Serial.println(distance);
-  if (distance>=4) return(false);
+  if (distance>=7) return(false);
   else return(true);
 }
 
