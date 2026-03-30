@@ -1,6 +1,6 @@
 #pragma once
 
-//*****************************encoder pin allocation***********************
+//*****************************encoder pin allocation***************************************
 const int LeftEncoderPin1 = 18 ;//15;
 const int LeftEncoderPin2 = 19;//4;
 
@@ -29,7 +29,7 @@ const int MIN_MOTOR_BIAS = 5;
 const int maxMotorPercentage = 100;
 
 //******************************robot dimensions*****************************/
-const float MM_PER_ROTATION = 204.2;//tyre
+const float MM_PER_ROTATION = 204.2;   //tyre
 const float PULSES_PER_ROTATION = 880;
 const float ROBOT_RADIUS = 77.5;  //there is some error in this. Although it says radius put Wheel to wheel diameter
 const float DEG_PER_MM_DIFFERENCE = 180.0/(2*ROBOT_RADIUS*PI);
@@ -118,4 +118,4 @@ int color_value = 0; //0- white, 1 = red, 2 = blue , 3 = green;
 //task1
 bool obstacal = false;
 
-int objects=1;
+int objects=0;

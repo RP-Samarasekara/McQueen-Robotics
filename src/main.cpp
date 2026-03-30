@@ -511,7 +511,7 @@ void task_5() {
         
     }
     
-    waitMillis(800);
+    speed=0; correction=0;\
     rotate_angle(-1,120);}
 
     else if (black_space_count == 7) {

@@ -192,8 +192,8 @@ void ramp_arm(){
 
   moveSmooth(base, 0, 180, 10);
   waitMillis(1200);
-  moveSmooth(elbow,180, 120,10);
-  waitMillis(800);
+  //moveSmooth(elbow,180, 120,10);
+  //waitMillis(800);
 
   
 }
